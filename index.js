@@ -1,3 +1,43 @@
+var ball = {
+    x: 100,
+    y: 100,
+    vx: 0,
+    vy: 1,
+    radius: 25,
+    color: 'red',
+    draw: function() {
+        let ctx = getCanvasContext();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI, true);
+        ctx.closePath();
+        ctx.fillStyle = this.colour;
+        ctx.fill();
+    },
+    simulate: function() {
+        this.x += this.vx
+        this.y += this.vy
+    }
+}
+
+function start() {
+    draw()
+}
+
+function draw() {
+    let ctx = getCanvasContext()
+
+    // clear the rectangle
+    ctx.clearRect(0, 0, getCanvas().width, getCanvas().height)
+
+
+    drawEnvironment()
+    ball.simulate()
+    ball.draw()
+    console.log("frame")
+
+    window.requestAnimationFrame(draw)
+}
+
 function getCanvas() {
     return document.getElementById('canvas')
 }
