@@ -1,13 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <title>phys-sim</title>
         <script src="index.js"></script>
     </head>
 
-    <body>
+    <body onload="drawEnvironment()">
         <h1>phys-sim</h1>
-        <button onclick="drawRect()">draw rectangle</button>
+        
         <canvas width="500" height="500" id="canvas"></canvas>
+
+        <br>
+        <button onclick="drawRect()">draw rectangle</button>
+        <button onclick="drawCircle()">draw circle</button>
     </body>
 
 </html>
