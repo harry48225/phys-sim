@@ -28,9 +28,10 @@ function Vector(x, y) {
 }
 
 
-function PhysicsObject(x, y, vx, vy, mass, grounded, draw) {
+function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside) {
     // a generic physics object,
     // draw should take an argument which is the 2D context to draw on
+    // isPointInside should take x,y and return whether it's inside the shape
     // x, y, vx, vy, mass are in standard SI
 
     this.x = x;
@@ -40,7 +41,31 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw) {
     this.mass = mass;
 
     this.draw = draw;
+    this.isPointInside = isPointInside;
 
+    this.isObjectInside = function (otherObject) {
+        let canvas = getCanvas()
+
+        // divide the canvas into 1px by 1px squares and check to see if there is a square that contains this object and the other object
+        // note that this is probably very slow
+
+        const SQUARE_SIZE = 1
+
+        let width = canvas.width
+        let height = canvas.height
+
+        for (x = 0; x < width; x += SQUARE_SIZE) {
+            for (y = 0; y < height; y += SQUARE_SIZE) {
+                
+                if (this.isPointInside(x,y) && otherObject.isPointInside(x,y)) {
+                    return true
+                }
+
+            }
+        }
+
+        return false
+    }
     
     this.grounded = grounded;
 
@@ -68,14 +93,32 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw) {
 function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
     PhysicsObject.call(this, x, y, vx, vy, mass, grounded, 
-        (ctx) => {
+        function (ctx) {
             ctx.beginPath()
             ctx.arc(this.x, this.y, radius, 0, 2*Math.PI, true)
             ctx.closePath()
             ctx.fillStyle = this.color
             ctx.fill()
+        },
+        function (x,y) {
+            // distance vector pointing from the ball to the point
+            let distanceVector = new Vector(x - this.x, y - this.y)
+
+            return (distanceVector.getLength() < radius)
         })
 
+}
+
+function Slab(x, y, vx, vy, mass, grounded, length, height) {
+    // an slab of the given length and height starting from x,y (top left corner) extending in the positive x direction
+
+    PhysicsObject.call(this, x, y, vx, vy, mass, grounded,
+        function (ctx) {
+            ctx.fillRect(x, y, length, height)
+        },
+        function (x,y) {
+            return ((this.y < y) && (y < this.y + height) && (this.x < x) && (x < this.x + length))
+        })
 }
 
 //---------------------------------------------
@@ -88,6 +131,9 @@ function start() {
 
     var ball = new Ball(10,10,0,0,1,false, 5,'red')
     objects.push(ball)
+
+    var floor = new Slab(0, getCanvas().height - 5, 0, 0, 1, true, getCanvas().width, 5)
+    objects.push(floor)
     loop()
 }
 
@@ -100,11 +146,24 @@ function loop() {
     .filter((physObj) => !physObj.grounded)
     .forEach((physObj) => {
         
-        // apply gravity
+       
         let force = new Vector(0,0)
 
+        // apply gravity
         // might need a better coordinate system
         force.add(new Vector(0, 9.8*physObj.mass))
+
+        // check for collisions
+
+        objects.forEach((collidingPhysObj) => {
+
+            if (collidingPhysObj !== physObj && physObj.isObjectInside(collidingPhysObj)) {
+                console.log(collidingPhysObj)
+                console.log(physObj)
+                alert("pause")
+            }
+        })
+
         
         physObj.applyForce(force)
 
@@ -115,9 +174,6 @@ function loop() {
 
     // clear the rectangle
     ctx.clearRect(0, 0, getCanvas().width, getCanvas().height)
-
-
-    drawEnvironment()
 
     objects.forEach((physObj) => {
         physObj.draw(ctx)
@@ -133,19 +189,6 @@ function getCanvas() {
 
 function getCanvasContext() {
     return getCanvas().getContext('2d')
-}
-
-function drawEnvironment() {
-    // Draws the floor and any other parts of the environment
-
-    let canvas = getCanvas()
-    // draw a rectangle at the bottom of the screen
-
-    let floorHeight = 5
-
-    let ctx = getCanvasContext()
-    ctx.fillRect(0, canvas.height - floorHeight, canvas.width, floorHeight)
-
 }
 
 function drawRect() {
