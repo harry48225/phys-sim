@@ -1,7 +1,34 @@
+function Vector(x, y) {
+
+    this.x = x
+    this.y = y
+    
+    this.add = function (vector) { 
+        this.x += vector.x
+        this.y += vector.y
+    }
+
+    // returns euclidean length
+    this.getLength = function () {
+        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
+    }
+
+    this.normalise = function () {
+        let length = this.getLength()
+
+        this.x /= length
+        this.y /= length
+
+    }
+
+    this.scale = function (scale) {
+        this.x *= scale
+        this.y *= scale
+    }
+}
 
 
-
-function PhysicsObject(x, y, vx, vy, mass, draw) {
+function PhysicsObject(x, y, vx, vy, mass, grounded, draw) {
     // a generic physics object,
     // draw should take an argument which is the 2D context to draw on
     // x, y, vx, vy, mass are in standard SI
@@ -14,20 +41,33 @@ function PhysicsObject(x, y, vx, vy, mass, draw) {
 
     this.draw = draw;
 
-    this.forces = [];
     
-    this.resetForces = function () { this.forces = [] }
+    this.grounded = grounded;
 
-    this.addForce = function (force) { this.forces.push(force) }
+    // applys the given force to the object and updates the velocity
+    this.applyForce = function (force) {
+        // explicit euler for now
 
-    // applys the given forces to the object and updates the velocity
-    this.applyForces = function () {}
+        let timeStep = 0.01
+
+        // F = ma ==> a = F/m
+
+        force.scale(1/this.mass)
+
+        // v += a*t
+
+        this.vx += (force.x) * timeStep
+        this.vy += (force.y) * timeStep
+        
+        this.x += this.vx
+        this.y += this.vy
+    }
 
 }
 
-function Ball(x, y, vx, vy, mass, radius, color) {
+function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
-    PhysicsObject.call(this, x, y, vx, vy, mass, 
+    PhysicsObject.call(this, x, y, vx, vy, mass, grounded, 
         (ctx) => {
             ctx.beginPath()
             ctx.arc(this.x, this.y, radius, 0, 2*Math.PI, true)
@@ -46,12 +86,31 @@ var objects = []
 function start() {
     // starts the simulation
 
-    var ball = new Ball(10,10,0,0,1,5,'red')
+    var ball = new Ball(10,10,0,0,1,false, 5,'red')
     objects.push(ball)
-    draw()
+    loop()
 }
 
-function draw() {
+function loop() {
+
+
+    // ----- simulation -----
+
+    objects
+    .filter((physObj) => !physObj.grounded)
+    .forEach((physObj) => {
+        
+        // apply gravity
+        let force = new Vector(0,0)
+
+        // might need a better coordinate system
+        force.add(new Vector(0, 9.8*physObj.mass))
+        
+        physObj.applyForce(force)
+
+    })
+
+    // ----- drawing -----
     let ctx = getCanvasContext()
 
     // clear the rectangle
@@ -59,12 +118,13 @@ function draw() {
 
 
     drawEnvironment()
-    objects.forEach((physicsObject) => {
-        physicsObject.draw(ctx)
+
+    objects.forEach((physObj) => {
+        physObj.draw(ctx)
     })
     console.log("frame")
 
-    window.requestAnimationFrame(draw)
+    window.requestAnimationFrame(loop)
 }
 
 function getCanvas() {
