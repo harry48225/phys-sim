@@ -1,25 +1,53 @@
-var ball = {
-    x: 100,
-    y: 100,
-    vx: 0,
-    vy: 1,
-    radius: 25,
-    color: 'red',
-    draw: function() {
-        let ctx = getCanvasContext();
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI, true);
-        ctx.closePath();
-        ctx.fillStyle = this.colour;
-        ctx.fill();
-    },
-    simulate: function() {
-        this.x += this.vx
-        this.y += this.vy
-    }
+
+
+
+function PhysicsObject(x, y, vx, vy, mass, draw) {
+    // a generic physics object,
+    // draw should take an argument which is the 2D context to draw on
+    // x, y, vx, vy, mass are in standard SI
+
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.mass = mass;
+
+    this.draw = draw;
+
+    this.forces = [];
+    
+    this.resetForces = function () { this.forces = [] }
+
+    this.addForce = function (force) { this.forces.push(force) }
+
+    // applys the given forces to the object and updates the velocity
+    this.applyForces = function () {}
+
 }
 
+function Ball(x, y, vx, vy, mass, radius, color) {
+
+    PhysicsObject.call(this, x, y, vx, vy, mass, 
+        (ctx) => {
+            ctx.beginPath()
+            ctx.arc(this.x, this.y, radius, 0, 2*Math.PI, true)
+            ctx.closePath()
+            ctx.fillStyle = this.color
+            ctx.fill()
+        })
+
+}
+
+//---------------------------------------------
+
+var objects = []
+
+
 function start() {
+    // starts the simulation
+
+    var ball = new Ball(10,10,0,0,1,5,'red')
+    objects.push(ball)
     draw()
 }
 
@@ -31,8 +59,9 @@ function draw() {
 
 
     drawEnvironment()
-    ball.simulate()
-    ball.draw()
+    objects.forEach((physicsObject) => {
+        physicsObject.draw(ctx)
+    })
     console.log("frame")
 
     window.requestAnimationFrame(draw)
