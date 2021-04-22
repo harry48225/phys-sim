@@ -27,8 +27,36 @@ function Vector(x, y) {
     }
 }
 
+class BoundingRectangle {
+    // a rectangle with sides aligned to the axes to provide a rough area that the PhysicsObject should occupy
+    // x, y, is the top left corner of the rectangle relative to the object, length is the x-direction, height is in the y-direction
 
-function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside) {
+    constructor(x, y, length, height) {
+        this.x = x;
+        this.y = y;
+        this.length = length;
+        this.height = height;
+    }
+    
+    * yieldRelativePoints(stepSize) {
+        for (let x_offset = this.x; x_offset < this.x + this.length; x_offset += stepSize) {
+            for (let y_offset = this.y; y_offset < this.y + this.height; y_offset += stepSize) {
+                yield {x:x_offset, y:y_offset}
+            }
+        }
+    }
+
+    draw (ctx, x, y) {
+
+        let oldFillStyle = ctx.fillStyle
+        ctx.fillStyle = "#FF0000"
+        ctx.fillRect(x + this.x, y + this.y, this.length, this.height)
+        ctx.fillStyle = oldFillStyle
+    }
+}
+
+
+function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, boundingRectangle) {
     // a generic physics object,
     // draw should take an argument which is the 2D context to draw on
     // isPointInside should take x,y and return whether it's inside the shape
@@ -42,29 +70,22 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside) {
 
     this.draw = draw;
     this.isPointInside = isPointInside;
+    this.boundingRectangle = boundingRectangle;
 
     this.isObjectInside = function (otherObject) {
         let canvas = getCanvas()
 
-        // divide the canvas into 1px by 1px squares and check to see if there is a square that contains this object and the other object
-        // note that this is probably very slow
+        // divide the bounding rectangle into 1px by 1px squares
+        // and check to see if there is a square that contains this object and the other object
 
         const SQUARE_SIZE = 1
-
-        let width = canvas.width
-        let height = canvas.height
-
-        for (x = 0; x < width; x += SQUARE_SIZE) {
-            for (y = 0; y < height; y += SQUARE_SIZE) {
-                
-                if (this.isPointInside(x,y) && otherObject.isPointInside(x,y)) {
-                    return true
-                }
-
+        for (let relativePoint of this.boundingRectangle.yieldRelativePoints(SQUARE_SIZE)) {
+            let point = {x: this.x + relativePoint.x, y: this.y + relativePoint.y}
+            if (this.isPointInside(point.x,point.y) && otherObject.isPointInside(point.x,point.y)) {
+                return true;
             }
         }
-
-        return false
+        return false;
     }
     
     this.grounded = grounded;
@@ -100,12 +121,14 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
             ctx.fillStyle = this.color
             ctx.fill()
         },
-        function (x,y) {
+        function (point_x,point_y) {
             // distance vector pointing from the ball to the point
-            let distanceVector = new Vector(x - this.x, y - this.y)
+            let distanceVector = new Vector(point_x - this.x, point_y - this.y)
 
             return (distanceVector.getLength() < radius)
-        })
+        },
+        // bounding rectangle uses relative coordinates
+        new BoundingRectangle(-radius, -radius, 2*radius, 2*radius))
 
 }
 
@@ -118,13 +141,18 @@ function Slab(x, y, vx, vy, mass, grounded, length, height) {
         },
         function (x,y) {
             return ((this.y < y) && (y < this.y + height) && (this.x < x) && (x < this.x + length))
-        })
+        },
+        new BoundingRectangle(0, 0, length, height))
 }
 
 //---------------------------------------------
 
 var objects = []
+var drawingBoundingRectangles = false
 
+function toggleBoundingRectangles() {
+    drawingBoundingRectangles = !drawingBoundingRectangles
+}
 
 function start() {
     // starts the simulation
@@ -177,6 +205,10 @@ function loop() {
 
     objects.forEach((physObj) => {
         physObj.draw(ctx)
+
+        if (drawingBoundingRectangles) {
+            physObj.boundingRectangle.draw(ctx, physObj.x, physObj.y)
+        }
     })
     console.log("frame")
 
