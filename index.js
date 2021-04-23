@@ -56,7 +56,7 @@ class BoundingRectangle {
 }
 
 
-function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, boundingRectangle) {
+function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, boundingRectangle, handleCollision) {
     // a generic physics object,
     // draw should take an argument which is the 2D context to draw on
     // isPointInside should take x,y and return whether it's inside the shape
@@ -109,6 +109,8 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, boundi
         this.y += this.vy
     }
 
+    this.handleCollision = handleCollision
+
 }
 
 function Ball(x, y, vx, vy, mass, grounded, radius, color) {
@@ -128,7 +130,20 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
             return (distanceVector.getLength() < radius)
         },
         // bounding rectangle uses relative coordinates
-        new BoundingRectangle(-radius, -radius, 2*radius, 2*radius))
+        new BoundingRectangle(-radius, -radius, 2*radius, 2*radius),
+        function (collisionObject) {
+
+            if (collisionObject instanceof Slab)
+            {
+                // angle of incidence = angle of reflection
+                // need to implement!!
+
+                // also need to shift the object so that it's not clipping with the slab
+                const COEFFICIENT_OF_RESTITUTION = 1 // should be a property of the slab
+                this.vy = -this.vy*COEFFICIENT_OF_RESTITUTION
+            }
+            
+        })
 
 }
 
@@ -156,12 +171,9 @@ function toggleBoundingRectangles() {
 
 function start() {
     // starts the simulation
+    objects.push(new Ball(10,10,0,0,1,false, 5,'red'))
 
-    var ball = new Ball(10,10,0,0,1,false, 5,'red')
-    objects.push(ball)
-
-    var floor = new Slab(0, getCanvas().height - 5, 0, 0, 1, true, getCanvas().width, 5)
-    objects.push(floor)
+    objects.push(new Slab(0, getCanvas().height - 5, 0, 0, 1, true, getCanvas().width, 5))
     loop()
 }
 
@@ -188,7 +200,10 @@ function loop() {
             if (collidingPhysObj !== physObj && physObj.isObjectInside(collidingPhysObj)) {
                 console.log(collidingPhysObj)
                 console.log(physObj)
-                alert("pause")
+                
+                if (physObj instanceof Ball) {
+                    physObj.handleCollision(collidingPhysObj)
+                }
             }
         })
 
