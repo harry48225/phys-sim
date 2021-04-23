@@ -1,3 +1,5 @@
+const TOLERANCE = 0.01
+
 function Vector(x, y) {
     // all methods return a new vector
     this.x = x
@@ -71,7 +73,9 @@ class BoundingRectangle {
 }
 
 
-function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, boundingRectangle, handleCollision) {
+function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, 
+    boundingRectangle, handleCollision, isPointOnPerimeter, closestPointTo,
+    normalAtPoint) {
     // a generic physics object,
     // draw should take an argument which is the 2D context to draw on
     // isPointInside should take x,y and return whether it's inside the shape
@@ -88,8 +92,6 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, boundi
     this.boundingRectangle = boundingRectangle;
 
     this.isObjectInside = function (otherObject) {
-        let canvas = getCanvas()
-
         // divide the bounding rectangle into 1px by 1px squares
         // and check to see if there is a square that contains this object and the other object
 
@@ -126,6 +128,13 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, boundi
 
     this.handleCollision = handleCollision
 
+    // returns the point on the object which is closest to the point argument
+    this.closestPointTo = closestPointTo
+
+    this.isPointOnPerimeter = isPointOnPerimeter
+
+    // return the normal to the surface at the given point
+    this.normalAtPoint = normalAtPoint
 }
 
 function Ball(x, y, vx, vy, mass, grounded, radius, color) {
@@ -146,10 +155,23 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
         },
         // bounding rectangle uses relative coordinates
         new BoundingRectangle(-radius, -radius, 2*radius, 2*radius),
+        // handle collision
         function (collisionObject) {
 
             if (collisionObject instanceof Slab)
             {
+                // move so that we're not intersecting
+                //this.x -= this.vx
+                //this.y -= this.vy
+                let intersection_point = collisionObject.closestPointTo(this.x, this.y)
+
+                let intersection_normal = collisionObject.normalAtPoint(intersection_point.x, intersection_point.y)
+
+                console.log(intersection_point)
+                console.log(intersection_normal)
+                alert()
+                // work out the collision point
+
                 // angle of incidence = angle of reflection
                 // need to implement!!
 
@@ -201,13 +223,84 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
 
             let center_to_point = new Vector(x, y).subtract(new Vector(this.x, this.y))
 
-            let distance_in_length_direction = center_to_point.dot(this.getLengthDirection())
-            let distance_in_height_direction = center_to_point.dot(this.getHeightDirection())
-            return ((-length/2 < distance_in_length_direction && distance_in_length_direction < length/2)
-                && (-height/2 < distance_in_height_direction && distance_in_height_direction < height/2))
+            let distance_in_length_direction = Math.abs(center_to_point.dot(this.getLengthDirection()))
+            let distance_in_height_direction = Math.abs(center_to_point.dot(this.getHeightDirection()))
+            return (distance_in_length_direction <= length/2)
+                && (distance_in_height_direction <= height/2)
 
         },
-        new BoundingRectangle(0, 0, length, height))
+        new BoundingRectangle(0, 0, length, height),
+        // handle collision
+        function (collisionObject) {},
+        // is point on perimeter
+        function (x,y) {
+
+            let center_to_point = new Vector(x, y).subtract(new Vector(this.x, this.y))
+
+            let distance_in_length_direction = Math.abs(center_to_point.dot(this.getLengthDirection()))
+            let distance_in_height_direction = Math.abs(center_to_point.dot(this.getHeightDirection()))
+            return (length/2 - TOLERANCE <= distance_in_height_direction && distance_in_length_direction <= length/2 + TOLERANCE)
+                || (height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction<= height/2 + TOLERANCE)
+        },
+        // closest point to
+        function (x,y) {
+
+            // do a raycast from the center to the point and find the first point of intersection
+            let center_to_point = new Vector(x, y).subtract(new Vector(this.x, this.y))
+            let center_to_point_direction = center_to_point.normalise()
+
+            let signed_distance_in_length = center_to_point.dot(this.getLengthDirection())
+            let signed_distance_in_height = center_to_point.dot(this.getHeightDirection())
+
+            let distance_in_length = Math.abs(signed_distance_in_length)
+            let distance_in_height = Math.abs(signed_distance_in_height)
+
+            // scale in the height direction to see if it's still on the rectangle
+            let candidate_vector = new Vector(x,y).subtract(this.getHeightDirection().scale((distance_in_height - height/2)*(signed_distance_in_height/distance_in_height)))
+
+            
+            if (this.isPointOnPerimeter(candidate_vector.x, candidate_vector.y)) {
+                return {x: candidate_vector.x, y: candidate_vector.y}
+            }
+            else {
+                // it must be in the length direction
+                candidate_vector = new Vector(x,y).subtract(this.getLengthDirection().scale((distance_in_length - length/2)*(signed_distance_in_length/distance_in_length)))
+
+                return {x: candidate_vector.x, y: candidate_vector.y}
+            }  
+                     
+        },
+        // normal to surface at point
+        function (x,y) {
+
+            if (!this.isPointOnPerimeter(x,y)) {
+
+                let closestPoint = this.closestPointTo(x,y)
+                x = closestPoint.x
+                y = closestPoint.y
+            }
+
+            let center_to_point = new Vector(x, y).subtract(new Vector(this.x, this.y))
+
+            let signed_distance_in_length_direction = center_to_point.dot(this.getLengthDirection())
+            let signed_distance_in_height_direction = center_to_point.dot(this.getHeightDirection())
+            let distance_in_length_direction = Math.abs(signed_distance_in_length_direction)
+            let distance_in_height_direction = Math.abs(signed_distance_in_height_direction)
+
+            let normal;
+            if (height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction <= height/2 + TOLERANCE) {
+                normal = this.getHeightDirection().scale(signed_distance_in_height_direction).normalise()
+            }
+            else {
+                normal = this.getLengthDirection().scale(signed_distance_in_length_direction).normalise()
+            }
+
+            normal.y = -normal.y // account for the non-standard y axis direction of the canvas
+
+            return normal
+
+
+        })
 }
 
 //---------------------------------------------
