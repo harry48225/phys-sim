@@ -1,11 +1,15 @@
 function Vector(x, y) {
-
+    // all methods return a new vector
     this.x = x
     this.y = y
     
     this.add = function (vector) { 
-        this.x += vector.x
-        this.y += vector.y
+        return new Vector(this.x + vector.x, this.y + vector.y)
+    }
+
+    this.subtract = function (vector) {
+
+        return new Vector(this.x, this.y).add(vector.scale(-1))
     }
 
     // returns euclidean length
@@ -15,15 +19,26 @@ function Vector(x, y) {
 
     this.normalise = function () {
         let length = this.getLength()
-
-        this.x /= length
-        this.y /= length
+        return new Vector(this.x / length, this.y / length)
 
     }
 
     this.scale = function (scale) {
-        this.x *= scale
-        this.y *= scale
+        return new Vector(this.x * scale, this.y * scale)
+    }
+
+    // rotates the vector anticlockwise by the given angle in radians
+    this.rotate = function (angle) {
+
+        let new_x = this.x*Math.cos(angle) - this.y*Math.sin(angle)
+        let new_y = this.x*Math.sin(angle) + this.y*Math.cos(angle)
+
+        return new Vector(new_x, new_y)
+    }
+
+    // dot product
+    this.dot = function (vector) {
+        return this.x * vector.x + this.y * vector.y
     }
 }
 
@@ -147,15 +162,50 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
 }
 
-function Slab(x, y, vx, vy, mass, grounded, length, height) {
-    // an slab of the given length and height starting from x,y (top left corner) extending in the positive x direction
+function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
+    // an slab of the given length and height with center x,y, with an angle <angle> (in radians) from the length to the positive x axis extending in the positive x direction
+
+    this.getLengthDirection = function () {
+        return new Vector(Math.cos(angle), Math.sin(angle))
+    }
+
+    this.getHeightDirection = function () {
+        return this.getLengthDirection().rotate(Math.PI/2) // rotate by pi/2 so that it points in the height direction
+    }
 
     PhysicsObject.call(this, x, y, vx, vy, mass, grounded,
+        // drawing command
         function (ctx) {
-            ctx.fillRect(x, y, length, height)
+
+            // draw using a path
+            let lengthDirection = this.getLengthDirection()
+            
+            let heightDirecton = this.getHeightDirection()
+            
+            let corner = new Vector(this.x, this.y).add(lengthDirection.scale(length/2)).add(heightDirecton.scale(height/2))
+            
+            ctx.beginPath();
+
+            // first vertex
+            ctx.moveTo(corner.x, corner.y)
+            corner = corner.add(lengthDirection.scale(-length))
+            ctx.lineTo(corner.x, corner.y)
+            corner = corner.add(heightDirecton.scale(-height))
+            ctx.lineTo(corner.x, corner.y)
+            corner = corner.add(lengthDirection.scale(length))
+            ctx.lineTo(corner.x, corner.y)
+            ctx.fill()
         },
+        // is point inside
         function (x,y) {
-            return ((this.y < y) && (y < this.y + height) && (this.x < x) && (x < this.x + length))
+
+            let center_to_point = new Vector(x, y).subtract(new Vector(this.x, this.y))
+
+            let distance_in_length_direction = center_to_point.dot(this.getLengthDirection())
+            let distance_in_height_direction = center_to_point.dot(this.getHeightDirection())
+            return ((-length/2 < distance_in_length_direction && distance_in_length_direction < length/2)
+                && (-height/2 < distance_in_height_direction && distance_in_height_direction < height/2))
+
         },
         new BoundingRectangle(0, 0, length, height))
 }
@@ -173,7 +223,7 @@ function start() {
     // starts the simulation
     objects.push(new Ball(10,10,0,0,1,false, 5,'red'))
 
-    objects.push(new Slab(0, getCanvas().height - 5, 0, 0, 1, true, getCanvas().width, 5))
+    objects.push(new Slab(getCanvas().width/2, 200, 0, 0, 1, true, getCanvas().width*2, 5, -Math.PI/4))
     loop()
 }
 
@@ -191,7 +241,7 @@ function loop() {
 
         // apply gravity
         // might need a better coordinate system
-        force.add(new Vector(0, 9.8*physObj.mass))
+        force = force.add(new Vector(0, 9.8*physObj.mass))
 
         // check for collisions
 
