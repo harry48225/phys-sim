@@ -65,10 +65,14 @@ class BoundingRectangle {
 
     draw (ctx, x, y) {
 
+        let saved = startDrawing(ctx)
         let oldFillStyle = ctx.fillStyle
         ctx.fillStyle = "#FF0000"
         ctx.fillRect(x + this.x, y + this.y, this.length, this.height)
         ctx.fillStyle = oldFillStyle
+
+        stopDrawing(ctx, saved)
+
     }
 }
 
