@@ -1,4 +1,5 @@
 const TOLERANCE = 0.01
+const TIME_STEP = 0.01
 
 function Vector(x, y) {
     // all methods return a new vector
@@ -46,7 +47,7 @@ function Vector(x, y) {
 
 class BoundingRectangle {
     // a rectangle with sides aligned to the axes to provide a rough area that the PhysicsObject should occupy
-    // x, y, is the top left corner of the rectangle relative to the object, length is the x-direction, height is in the y-direction
+    // x, y, is the center of the rectangle relative to the object, length is the x-direction, height is in the y-direction
 
     constructor(x, y, length, height) {
         this.x = x;
@@ -56,8 +57,8 @@ class BoundingRectangle {
     }
     
     * yieldRelativePoints(stepSize) {
-        for (let x_offset = this.x; x_offset < this.x + this.length; x_offset += stepSize) {
-            for (let y_offset = this.y; y_offset < this.y + this.height; y_offset += stepSize) {
+        for (let x_offset = this.x - this.length/2; x_offset < this.x + this.length/2; x_offset += stepSize) {
+            for (let y_offset = this.y - this.height/2; y_offset < this.y + this.height/2; y_offset += stepSize) {
                 yield {x:x_offset, y:y_offset}
             }
         }
@@ -113,21 +114,21 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside,
 
     // applys the given force to the object and updates the velocity
     this.applyForce = function (force) {
-        // explicit euler for now
 
-        let timeStep = 0.01
+        if (!this.grounded) {
+            // explicit euler for now
+            // F = ma ==> a = F/m
 
-        // F = ma ==> a = F/m
+            force.scale(1/this.mass)
 
-        force.scale(1/this.mass)
+            // v += a*t
 
-        // v += a*t
-
-        this.vx += (force.x) * timeStep
-        this.vy += (force.y) * timeStep
-        
-        this.x += this.vx
-        this.y += this.vy
+            this.vx += (force.x) * TIME_STEP
+            this.vy += (force.y) * TIME_STEP
+            
+            this.x += this.vx
+            this.y += this.vy
+        }
     }
 
     this.handleCollision = handleCollision
@@ -142,6 +143,9 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside,
 }
 
 function Ball(x, y, vx, vy, mass, grounded, radius, color) {
+
+    this.radius = radius
+    this.color = color
 
     PhysicsObject.call(this, x, y, vx, vy, mass, grounded, 
         function (ctx) {
@@ -245,6 +249,10 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
     // an slab of the given length and height with center x,y, with an angle <angle> (in radians) from the length to the positive x axis extending in the positive x direction
 
+    this.length = length
+    this.height = height
+    this.angle = angle
+
     this.getLengthDirection = function () {
         return new Vector(Math.cos(angle), Math.sin(angle))
     }
@@ -300,8 +308,10 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
 
             let distance_in_length_direction = Math.abs(center_to_point.dot(this.getLengthDirection()))
             let distance_in_height_direction = Math.abs(center_to_point.dot(this.getHeightDirection()))
-            return (length/2 - TOLERANCE <= distance_in_height_direction && distance_in_length_direction <= length/2 + TOLERANCE)
-                || (height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction<= height/2 + TOLERANCE)
+            return ((length/2 - TOLERANCE <= distance_in_length_direction && distance_in_length_direction <= length/2 + TOLERANCE) 
+            && distance_in_height_direction <= this.height/2)
+            || ((height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction<= height/2 + TOLERANCE)
+            && distance_in_length_direction <= this.length/2)
         },
         // closest point to
         function (x,y) {
@@ -473,3 +483,11 @@ function drawCircle() {
     ctx.arc(50, 50, 30, 0, 2*Math.PI, true)
     ctx.fill()
 }
+
+exports.TIME_STEP = TIME_STEP
+
+exports.Vector = Vector
+exports.BoundingRectangle = BoundingRectangle
+exports.PhysicsObject = PhysicsObject
+exports.Ball = Ball
+exports.Slab = Slab
