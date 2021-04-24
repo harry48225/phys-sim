@@ -141,11 +141,15 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
     PhysicsObject.call(this, x, y, vx, vy, mass, grounded, 
         function (ctx) {
+
+            let saved = startDrawing(ctx)
             ctx.beginPath()
             ctx.arc(this.x, this.y, radius, 0, 2*Math.PI, true)
             ctx.closePath()
             ctx.fillStyle = this.color
             ctx.fill()
+
+            stopDrawing(ctx, saved)
         },
         function (point_x,point_y) {
             // distance vector pointing from the ball to the point
@@ -175,7 +179,6 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
                 let component_normal = collision_normal.scale(velocity.dot(collision_normal))
 
                 velocity = velocity.subtract(component_normal.scale(2))
-                alert(velocity.dot(collision_normal))
 
 
                 /*
@@ -193,12 +196,14 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
                 if (drawCollisionNormals) {
                     let ctx = getCanvasContext()
+
+                    let saved = startDrawing(ctx)
                     ctx.strokeStyle = 'red'
                     ctx.lineWidth = 2
                     ctx.beginPath()
                     ctx.moveTo(collision_point.x, collision_point.y)
 
-                    ctx.lineTo(collision_point.x + 30*collision_normal.x, collision_point.y - 30*collision_normal.y)
+                    ctx.lineTo(collision_point.x + 30*collision_normal.x, collision_point.y + 30*collision_normal.y)
                     ctx.stroke()
 
                     // old velocity
@@ -216,13 +221,10 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
                     ctx.lineTo(collision_point.x + 30*this.vx, collision_point.y + 30*this.vy)
                     ctx.stroke()
 
+                    stopDrawing(ctx, saved)
+
                 }
                 
-                
-
-                console.log(collision_point)
-                console.log(collision_normal)
-                alert()
                 /*
                 // also need to shift the object so that it's not clipping with the slab
                 const COEFFICIENT_OF_RESTITUTION = 1 // should be a property of the slab
@@ -258,6 +260,7 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
             
             let corner = new Vector(this.x, this.y).add(lengthDirection.scale(length/2)).add(heightDirecton.scale(height/2))
             
+            let saved = startDrawing(ctx)
             ctx.beginPath();
 
             // first vertex
@@ -269,6 +272,8 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
             corner = corner.add(lengthDirection.scale(length))
             ctx.lineTo(corner.x, corner.y)
             ctx.fill()
+
+            stopDrawing(ctx, saved)
         },
         // is point inside
         function (x,y) {
@@ -348,8 +353,6 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
                 normal = this.getLengthDirection().scale(signed_distance_in_length_direction).normalise()
             }
 
-            normal.y = -normal.y // account for the non-standard y axis direction of the canvas
-
             return normal
 
 
@@ -372,10 +375,10 @@ function toggleCollisionNormals() {
 
 function start() {
     // starts the simulation
-    objects.push(new Ball(200,10,0,0,1,false, 5,'red'))
+    objects.push(new Ball(100,300,0,0,1,false, 5,'red'))
 
-    objects.push(new Slab(getCanvas().width/2, 200, 0, 0, 1, true, getCanvas().width*2, 5, -Math.PI/4))
-    objects.push(new Slab(10, 60, 0, 0, 0, true, 1000, 2, -Math.PI * 0.7))
+    objects.push(new Slab(getCanvas().width/2, 0, 0, 0, 1, true, getCanvas().width*2, 5, -Math.PI/4))
+    objects.push(new Slab(60, 50, 0, 0, 0, true, 1000, 2, Math.PI * 0.2))
     loop()
 }
 
@@ -393,7 +396,7 @@ function loop() {
 
         // apply gravity
         // might need a better coordinate system
-        force = force.add(new Vector(0, 9.8*physObj.mass))
+        force = force.add(new Vector(0, -9.8*physObj.mass))
 
         // check for collisions
 
@@ -445,7 +448,7 @@ function startDrawing(ctx) {
 }
 
 function stopDrawing(ctx, savedState) {
-    ctx.restore(saved)
+    ctx.restore(savedState)
 }
 
 function getCanvasContext() {
