@@ -4,4 +4,7 @@ describe("Vector", () => {
     test('length of (3,4) to equal 5', () => {
         expect(new index.Vector(3,4).getLength()).toBe(5)
     })
+    test('expected failure', () => {
+        expect(true).toBe(false)
+    })
 })
