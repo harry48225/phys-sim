@@ -46,7 +46,7 @@ function Vector(x, y) {
 
 class BoundingRectangle {
     // a rectangle with sides aligned to the axes to provide a rough area that the PhysicsObject should occupy
-    // x, y, is the top left corner of the rectangle relative to the object, length is the x-direction, height is in the y-direction
+    // x, y, is the center of the rectangle relative to the object, length is the x-direction, height is in the y-direction
 
     constructor(x, y, length, height) {
         this.x = x;
@@ -56,8 +56,8 @@ class BoundingRectangle {
     }
     
     * yieldRelativePoints(stepSize) {
-        for (let x_offset = this.x; x_offset < this.x + this.length; x_offset += stepSize) {
-            for (let y_offset = this.y; y_offset < this.y + this.height; y_offset += stepSize) {
+        for (let x_offset = this.x - this.length/2; x_offset < this.x + this.length/2; x_offset += stepSize) {
+            for (let y_offset = this.y - this.height/2; y_offset < this.y + this.height/2; y_offset += stepSize) {
                 yield {x:x_offset, y:y_offset}
             }
         }
@@ -475,3 +475,4 @@ function drawCircle() {
 }
 
 exports.Vector = Vector
+exports.BoundingRectangle = BoundingRectangle
