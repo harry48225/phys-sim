@@ -181,12 +181,12 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
                 velocity = velocity.subtract(component_normal.scale(2))
 
 
-                /*
+                
                 // move so that we're outside the collision point
                 
                 this.x -= this.vx
                 this.y -= this.vy
-                */
+                
 
                 let oldVelocity = new Vector(this.vx, this.vy)
 
