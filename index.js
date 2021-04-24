@@ -144,6 +144,9 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside,
 
 function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
+    this.radius = radius
+    this.color = color
+    
     PhysicsObject.call(this, x, y, vx, vy, mass, grounded, 
         function (ctx) {
 
@@ -480,3 +483,4 @@ exports.TIME_STEP = TIME_STEP
 exports.Vector = Vector
 exports.BoundingRectangle = BoundingRectangle
 exports.PhysicsObject = PhysicsObject
+exports.Ball = Ball
