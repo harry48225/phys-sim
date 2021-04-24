@@ -473,3 +473,5 @@ function drawCircle() {
     ctx.arc(50, 50, 30, 0, 2*Math.PI, true)
     ctx.fill()
 }
+
+exports.Vector = Vector
