@@ -146,7 +146,7 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
     this.radius = radius
     this.color = color
-    
+
     PhysicsObject.call(this, x, y, vx, vy, mass, grounded, 
         function (ctx) {
 
@@ -249,6 +249,10 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
     // an slab of the given length and height with center x,y, with an angle <angle> (in radians) from the length to the positive x axis extending in the positive x direction
 
+    this.length = length
+    this.height = height
+    this.angle = angle
+
     this.getLengthDirection = function () {
         return new Vector(Math.cos(angle), Math.sin(angle))
     }
@@ -304,8 +308,10 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
 
             let distance_in_length_direction = Math.abs(center_to_point.dot(this.getLengthDirection()))
             let distance_in_height_direction = Math.abs(center_to_point.dot(this.getHeightDirection()))
-            return (length/2 - TOLERANCE <= distance_in_height_direction && distance_in_length_direction <= length/2 + TOLERANCE)
-                || (height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction<= height/2 + TOLERANCE)
+            return ((length/2 - TOLERANCE <= distance_in_length_direction && distance_in_length_direction <= length/2 + TOLERANCE) 
+            && distance_in_height_direction <= this.height/2)
+            || ((height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction<= height/2 + TOLERANCE)
+            && distance_in_length_direction <= this.length/2)
         },
         // closest point to
         function (x,y) {
@@ -484,3 +490,4 @@ exports.Vector = Vector
 exports.BoundingRectangle = BoundingRectangle
 exports.PhysicsObject = PhysicsObject
 exports.Ball = Ball
+exports.Slab = Slab
