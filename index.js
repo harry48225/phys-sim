@@ -1,4 +1,5 @@
 const TOLERANCE = 0.01
+const TIME_STEP = 0.01
 
 function Vector(x, y) {
     // all methods return a new vector
@@ -113,21 +114,21 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside,
 
     // applys the given force to the object and updates the velocity
     this.applyForce = function (force) {
-        // explicit euler for now
 
-        let timeStep = 0.01
+        if (!this.grounded) {
+            // explicit euler for now
+            // F = ma ==> a = F/m
 
-        // F = ma ==> a = F/m
+            force.scale(1/this.mass)
 
-        force.scale(1/this.mass)
+            // v += a*t
 
-        // v += a*t
-
-        this.vx += (force.x) * timeStep
-        this.vy += (force.y) * timeStep
-        
-        this.x += this.vx
-        this.y += this.vy
+            this.vx += (force.x) * TIME_STEP
+            this.vy += (force.y) * TIME_STEP
+            
+            this.x += this.vx
+            this.y += this.vy
+        }
     }
 
     this.handleCollision = handleCollision
@@ -474,5 +475,8 @@ function drawCircle() {
     ctx.fill()
 }
 
+exports.TIME_STEP = TIME_STEP
+
 exports.Vector = Vector
 exports.BoundingRectangle = BoundingRectangle
+exports.PhysicsObject = PhysicsObject
