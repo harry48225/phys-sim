@@ -160,24 +160,76 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
             if (collisionObject instanceof Slab)
             {
-                // move so that we're not intersecting
-                //this.x -= this.vx
-                //this.y -= this.vy
-                let intersection_point = collisionObject.closestPointTo(this.x, this.y)
+                let collision_point = collisionObject.closestPointTo(this.x, this.y)
 
-                let intersection_normal = collisionObject.normalAtPoint(intersection_point.x, intersection_point.y)
+                let collision_normal = collisionObject.normalAtPoint(collision_point.x, collision_point.y)
 
-                console.log(intersection_point)
-                console.log(intersection_normal)
-                alert()
-                // work out the collision point
+                console.log(collision_normal)
+                console.log(collision_point)
+                console.log(collision_normal)
 
                 // angle of incidence = angle of reflection
-                // need to implement!!
+                // reflect the velocity in the normal
 
+                let velocity = new Vector(this.vx, this.vy)
+                let component_normal = collision_normal.scale(velocity.dot(collision_normal))
+
+                velocity = velocity.subtract(component_normal.scale(2))
+                alert(velocity.dot(collision_normal))
+
+
+                /*
+                // move so that we're outside the collision point
+                
+                this.x -= this.vx
+                this.y -= this.vy
+                */
+
+                let oldVelocity = new Vector(this.vx, this.vy)
+
+                // apply the new velocity
+                this.vx = velocity.x
+                this.vy = velocity.y
+
+                if (drawCollisionNormals) {
+                    let ctx = getCanvasContext()
+                    ctx.strokeStyle = 'red'
+                    ctx.lineWidth = 2
+                    ctx.beginPath()
+                    ctx.moveTo(collision_point.x, collision_point.y)
+
+                    ctx.lineTo(collision_point.x + 30*collision_normal.x, collision_point.y - 30*collision_normal.y)
+                    ctx.stroke()
+
+                    // old velocity
+                    ctx.strokeStyle = 'blue'
+                    ctx.beginPath()
+                    ctx.moveTo(collision_point.x, collision_point.y)
+                    ctx.lineTo(collision_point.x - 30*oldVelocity.x, collision_point.y - 30*oldVelocity.y)
+                    ctx.stroke()
+
+
+                    // new velocity
+                    ctx.strokeStyle = 'green'
+                    ctx.beginPath()
+                    ctx.moveTo(collision_point.x, collision_point.y)
+                    ctx.lineTo(collision_point.x + 30*this.vx, collision_point.y + 30*this.vy)
+                    ctx.stroke()
+
+                }
+                
+                
+
+                console.log(collision_point)
+                console.log(collision_normal)
+                alert()
+                /*
                 // also need to shift the object so that it's not clipping with the slab
                 const COEFFICIENT_OF_RESTITUTION = 1 // should be a property of the slab
                 this.vy = -this.vy*COEFFICIENT_OF_RESTITUTION
+                */
+
+                // handle non-grounded slab
             }
             
         })
@@ -290,6 +342,7 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
             let normal;
             if (height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction <= height/2 + TOLERANCE) {
                 normal = this.getHeightDirection().scale(signed_distance_in_height_direction).normalise()
+                console.log("height normal")
             }
             else {
                 normal = this.getLengthDirection().scale(signed_distance_in_length_direction).normalise()
@@ -307,16 +360,22 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
 
 var objects = []
 var drawingBoundingRectangles = false
+var drawCollisionNormals = true
 
 function toggleBoundingRectangles() {
     drawingBoundingRectangles = !drawingBoundingRectangles
 }
 
+function toggleCollisionNormals() {
+    drawCollisionNormals = !drawCollisionNormals
+}
+
 function start() {
     // starts the simulation
-    objects.push(new Ball(10,10,0,0,1,false, 5,'red'))
+    objects.push(new Ball(200,10,0,0,1,false, 5,'red'))
 
     objects.push(new Slab(getCanvas().width/2, 200, 0, 0, 1, true, getCanvas().width*2, 5, -Math.PI/4))
+    objects.push(new Slab(10, 60, 0, 0, 0, true, 1000, 2, -Math.PI * 0.7))
     loop()
 }
 
@@ -375,6 +434,18 @@ function loop() {
 
 function getCanvas() {
     return document.getElementById('canvas')
+}
+
+function startDrawing(ctx) {
+    let saved = ctx.save()
+    ctx.translate(0, getCanvas().height)
+    ctx.scale(1,-1)
+
+    return saved
+}
+
+function stopDrawing(ctx, savedState) {
+    ctx.restore(saved)
 }
 
 function getCanvasContext() {
