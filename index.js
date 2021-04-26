@@ -80,7 +80,7 @@ class BoundingRectangle {
 
 function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, 
     boundingRectangle, handleCollision, isPointOnPerimeter, closestPointTo,
-    normalAtPoint) {
+    normalAtPoint, coefficientOfRestitution=1) {
     // a generic physics object,
     // draw should take an argument which is the 2D context to draw on
     // isPointInside should take x,y and return whether it's inside the shape
@@ -95,6 +95,8 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside,
     this.draw = draw;
     this.isPointInside = isPointInside;
     this.boundingRectangle = boundingRectangle;
+
+    this.coefficientOfRestitution = coefficientOfRestitution
 
     this.isObjectInside = function (otherObject) {
         // divide the bounding rectangle into 1px by 1px squares
@@ -188,8 +190,10 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
                 velocity = velocity.subtract(component_normal.scale(2))
 
+                // apply coefficient of restitution
 
-                
+                velocity = velocity.scale(collisionObject.coefficientOfRestitution)
+
                 // move so that we're outside the collision point
                 
                 this.x -= this.vx
@@ -233,20 +237,14 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
                 }
                 
-                /*
-                // also need to shift the object so that it's not clipping with the slab
-                const COEFFICIENT_OF_RESTITUTION = 1 // should be a property of the slab
-                this.vy = -this.vy*COEFFICIENT_OF_RESTITUTION
-                */
 
-                // handle non-grounded slab
             }
             
         })
 
 }
 
-function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
+function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0, restitution=1) {
     // an slab of the given length and height with center x,y, with an angle <angle> (in radians) from the length to the positive x axis extending in the positive x direction
 
     this.length = length
@@ -370,7 +368,8 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0) {
             return normal
 
 
-        })
+        },
+        restitution)
 }
 
 //---------------------------------------------
@@ -391,7 +390,7 @@ function start() {
     // starts the simulation
     objects.push(new Ball(100,300,0,0,1,false, 5,'red'))
 
-    objects.push(new Slab(getCanvas().width/2, 0, 0, 0, 1, true, getCanvas().width*2, 5, -Math.PI/4))
+    objects.push(new Slab(getCanvas().width/2, 0, 0, 0, 1, true, getCanvas().width*2, 5, -Math.PI/4, 0.9))
     objects.push(new Slab(60, 50, 0, 0, 0, true, 1000, 2, Math.PI * 0.2))
     loop()
 }

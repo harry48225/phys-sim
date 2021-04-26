@@ -107,7 +107,7 @@ describe('BoundingRectangle', () => {
 
 describe('PhysicsObject', () => {
 
-    test('constructor', () => {
+    test('constructor without restitution', () => {
 
         let x = 1
         let y = 2
@@ -140,6 +140,45 @@ describe('PhysicsObject', () => {
         expect(physObj.isPointOnPerimeter).toBe(isPointOnPerimeter)
         expect(physObj.closestPointTo).toBe(closestPointTo)
         expect(physObj.normalAtPoint).toBe(normalAtPoint)
+        expect(physObj.coefficientOfRestitution).toBe(1)
+        
+    })
+
+    test('constructor with restitution', () => {
+
+        let x = 1
+        let y = 2
+        let vx = 3
+        let vy = 4
+        let mass = 5
+        let grounded = true
+        let draw = () => {}
+        let isPointInside = () => {}
+        let boundingRectangle = null
+        let handleCollision = () => {}
+        let isPointOnPerimeter = () => {}
+        let closestPointTo = () => {}
+        let normalAtPoint = () => {}
+        let restitution = 0.5
+
+        let physObj = new index.PhysicsObject(x,y,vx,vy,mass,grounded, draw,
+            isPointInside, boundingRectangle, handleCollision, isPointOnPerimeter,
+            closestPointTo, normalAtPoint, restitution)
+
+        expect(physObj.x).toBe(x)
+        expect(physObj.y).toBe(y)
+        expect(physObj.vx).toBe(vx)
+        expect(physObj.vy).toBe(vy)
+        expect(physObj.mass).toBe(mass)
+        expect(physObj.grounded).toBe(grounded)
+        expect(physObj.draw).toBe(draw)
+        expect(physObj.isPointInside).toBe(isPointInside)
+        expect(physObj.boundingRectangle).toBe(boundingRectangle)
+        expect(physObj.handleCollision).toBe(handleCollision)
+        expect(physObj.isPointOnPerimeter).toBe(isPointOnPerimeter)
+        expect(physObj.closestPointTo).toBe(closestPointTo)
+        expect(physObj.normalAtPoint).toBe(normalAtPoint)
+        expect(physObj.coefficientOfRestitution).toBe(restitution)
         
     })
 
@@ -446,7 +485,7 @@ describe('Ball', () => {
 
 describe('Slab', () => {
     
-    test('constructor', () => {
+    test('constructor without restitution', () => {
 
         let x = 0;
         let y = 1;
@@ -469,6 +508,34 @@ describe('Slab', () => {
         expect(slab.length).toBe(length)
         expect(slab.height).toBe(height)
         expect(slab.angle).toBe(angle)
+        expect(slab.coefficientOfRestitution).toBe(1)
+    })
+
+    test('constructor with restitution', () => {
+
+        let x = 0;
+        let y = 1;
+        let vx = 2;
+        let vy = 3;
+        let mass = 4;
+        let grounded = true;
+        let length = 5;
+        let height = 6;
+        let angle = Math.PI;
+        let restitution = 0.1
+
+        let slab = new index.Slab(x,y,vx,vy,mass,grounded,length,height,angle, restitution)
+        
+        expect(slab.x).toBe(x)
+        expect(slab.y).toBe(y)
+        expect(slab.vx).toBe(vx)
+        expect(slab.vy).toBe(vy)
+        expect(slab.mass).toBe(mass)
+        expect(slab.grounded).toBe(grounded)
+        expect(slab.length).toBe(length)
+        expect(slab.height).toBe(height)
+        expect(slab.angle).toBe(angle)
+        expect(slab.coefficientOfRestitution).toBe(restitution)
     })
 
     test('correct length direction', () => {
