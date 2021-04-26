@@ -49,9 +49,9 @@ class BoundingRectangle {
     // a rectangle with sides aligned to the axes to provide a rough area that the PhysicsObject should occupy
     // x, y, is the center of the rectangle relative to the object, length is the x-direction, height is in the y-direction
 
-    constructor(x, y, length, height) {
-        this.x = x;
-        this.y = y;
+    constructor(x_pos, y_pos, length, height) {
+        this.x = x_pos;
+        this.y = y_pos;
         this.length = length;
         this.height = height;
     }
@@ -78,7 +78,7 @@ class BoundingRectangle {
 }
 
 
-function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside, 
+function PhysicsObject(x_pos, y_pos, vx, vy, mass, grounded, draw, isPointInside, 
     boundingRectangle, handleCollision, isPointOnPerimeter, closestPointTo,
     normalAtPoint, coefficientOfRestitution=1) {
     // a generic physics object,
@@ -86,8 +86,8 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside,
     // isPointInside should take x,y and return whether it's inside the shape
     // x, y, vx, vy, mass are in standard SI
 
-    this.x = x;
-    this.y = y;
+    this.x = x_pos;
+    this.y = y_pos;
     this.vx = vx;
     this.vy = vy;
     this.mass = mass;
@@ -144,12 +144,12 @@ function PhysicsObject(x, y, vx, vy, mass, grounded, draw, isPointInside,
     this.normalAtPoint = normalAtPoint
 }
 
-function Ball(x, y, vx, vy, mass, grounded, radius, color) {
+function Ball(x_pos, y_pos, vx, vy, mass, grounded, radius, color) {
 
     this.radius = radius
     this.color = color
 
-    PhysicsObject.call(this, x, y, vx, vy, mass, grounded, 
+    PhysicsObject.call(this, x_pos, y_pos, vx, vy, mass, grounded, 
         function (ctx) {
 
             let saved = startDrawing(ctx)
@@ -244,7 +244,7 @@ function Ball(x, y, vx, vy, mass, grounded, radius, color) {
 
 }
 
-function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0, restitution=1) {
+function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, restitution=1) {
     // an slab of the given length and height with center x,y, with an angle <angle> (in radians) from the length to the positive x axis extending in the positive x direction
 
     this.length = length
@@ -259,7 +259,7 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0, restitution
         return this.getLengthDirection().rotate(Math.PI/2) // rotate by pi/2 so that it points in the height direction
     }
 
-    PhysicsObject.call(this, x, y, vx, vy, mass, grounded,
+    PhysicsObject.call(this, x_pos, y_pos, vx, vy, mass, grounded,
         // drawing command
         function (ctx) {
 
@@ -316,7 +316,7 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0, restitution
 
             // do a raycast from the center to the point and find the first point of intersection
             let center_to_point = new Vector(x, y).subtract(new Vector(this.x, this.y))
-            let center_to_point_direction = center_to_point.normalise()
+            //let center_to_point_direction = center_to_point.normalise()
 
             let signed_distance_in_length = center_to_point.dot(this.getLengthDirection())
             let signed_distance_in_height = center_to_point.dot(this.getHeightDirection())
@@ -353,7 +353,7 @@ function Slab(x, y, vx, vy, mass, grounded, length, height, angle=0, restitution
 
             let signed_distance_in_length_direction = center_to_point.dot(this.getLengthDirection())
             let signed_distance_in_height_direction = center_to_point.dot(this.getHeightDirection())
-            let distance_in_length_direction = Math.abs(signed_distance_in_length_direction)
+            //let distance_in_length_direction = Math.abs(signed_distance_in_length_direction)
             let distance_in_height_direction = Math.abs(signed_distance_in_height_direction)
 
             let normal;

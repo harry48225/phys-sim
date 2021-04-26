@@ -190,7 +190,7 @@ describe('PhysicsObject', () => {
         let mass = 5
         let grounded = true
         let draw = () => {}
-        let isPointInside = (x,y) => {return x == 1 && y == 2}
+        let isPointInside = (xx,yy) => {return xx == 1 && yy == 2}
         let boundingRectangle = new index.BoundingRectangle(1,2,5,5)
         let handleCollision = () => {}
         let isPointOnPerimeter = () => {}
@@ -212,7 +212,7 @@ describe('PhysicsObject', () => {
         let mass = 5
         let grounded = true
         let draw = () => {}
-        let isPointInside = (x,y) => {return x == 1 && y == 2}
+        let isPointInside = (xx,yy) => {return xx == 1 && yy == 2}
         let boundingRectangle = new index.BoundingRectangle(1,2,5,5)
         let handleCollision = () => {}
         let isPointOnPerimeter = () => {}
@@ -234,7 +234,7 @@ describe('PhysicsObject', () => {
         let mass = 5
         let grounded = true
         let draw = () => {}
-        let isPointInside = (x,y) => {return x == 0 && y == 0}
+        let isPointInside = (xx,yy) => {return xx == 0 && yy == 0}
         let boundingRectangle = new index.BoundingRectangle(0,0,2,2)
         let handleCollision = () => {}
         let isPointOnPerimeter = () => {}
@@ -335,8 +335,8 @@ describe('PhysicsObject', () => {
         let boundingRectangle = null
         let handleCollision = () => {}
         let isPointOnPerimeter = () => {}
-        let closestPointTo = (x,y) => {
-            if (x == 1 && y == 0) {
+        let closestPointTo = (xx,yy) => {
+            if (xx == 1 && yy == 0) {
                 return {x:10, y:-10}
             }
             else {
@@ -364,7 +364,7 @@ describe('PhysicsObject', () => {
         let isPointInside = () => {}
         let boundingRectangle = null
         let handleCollision = () => {}
-        let isPointOnPerimeter = (x,y) => {return x == 1 && y == 1}
+        let isPointOnPerimeter = (xx,yy) => {return xx == 1 && yy == 1}
         let closestPointTo = () => {}
         let normalAtPoint = () => {}
 
@@ -386,7 +386,7 @@ describe('PhysicsObject', () => {
         let isPointInside = () => {}
         let boundingRectangle = null
         let handleCollision = () => {}
-        let isPointOnPerimeter = (x,y) => {return x == 1 && y == 1}
+        let isPointOnPerimeter = (xx,yy) => {return xx == 1 && yy == 1}
         let closestPointTo = () => {}
         let normalAtPoint = () => {}
 
