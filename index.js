@@ -468,21 +468,6 @@ function getCanvasContext() {
     return getCanvas().getContext('2d')
 }
 
-function drawRect() {
-    let ctx = getCanvasContext()
-    ctx.fillStyle = 'rgb(200, 0, 0)'
-    ctx.fillRect(10,10,50,50)
-}
-
-function drawCircle() {
-    const ctx = getCanvasContext()
-
-    ctx.beginPath()
-    ctx.moveTo(75, 50)
-    ctx.arc(50, 50, 30, 0, 2*Math.PI, true)
-    ctx.fill()
-}
-
 exports.TIME_STEP = TIME_STEP
 
 exports.Vector = Vector
