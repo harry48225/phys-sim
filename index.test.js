@@ -118,13 +118,12 @@ describe('PhysicsObject', () => {
         let draw = () => {}
         let isPointInside = () => {}
         let boundingRectangle = null
-        let handleCollision = () => {}
         let isPointOnPerimeter = () => {}
         let closestPointTo = () => {}
         let normalAtPoint = () => {}
 
         let physObj = new index.PhysicsObject(x,y,vx,vy,mass,grounded, draw,
-            isPointInside, boundingRectangle, handleCollision, isPointOnPerimeter,
+            isPointInside, boundingRectangle, isPointOnPerimeter,
             closestPointTo, normalAtPoint)
 
         expect(physObj.x).toBe(x)
@@ -136,7 +135,6 @@ describe('PhysicsObject', () => {
         expect(physObj.draw).toBe(draw)
         expect(physObj.isPointInside).toBe(isPointInside)
         expect(physObj.boundingRectangle).toBe(boundingRectangle)
-        expect(physObj.handleCollision).toBe(handleCollision)
         expect(physObj.isPointOnPerimeter).toBe(isPointOnPerimeter)
         expect(physObj.closestPointTo).toBe(closestPointTo)
         expect(physObj.normalAtPoint).toBe(normalAtPoint)
@@ -155,14 +153,13 @@ describe('PhysicsObject', () => {
         let draw = () => {}
         let isPointInside = () => {}
         let boundingRectangle = null
-        let handleCollision = () => {}
         let isPointOnPerimeter = () => {}
         let closestPointTo = () => {}
         let normalAtPoint = () => {}
         let restitution = 0.5
 
         let physObj = new index.PhysicsObject(x,y,vx,vy,mass,grounded, draw,
-            isPointInside, boundingRectangle, handleCollision, isPointOnPerimeter,
+            isPointInside, boundingRectangle, isPointOnPerimeter,
             closestPointTo, normalAtPoint, restitution)
 
         expect(physObj.x).toBe(x)
@@ -174,7 +171,6 @@ describe('PhysicsObject', () => {
         expect(physObj.draw).toBe(draw)
         expect(physObj.isPointInside).toBe(isPointInside)
         expect(physObj.boundingRectangle).toBe(boundingRectangle)
-        expect(physObj.handleCollision).toBe(handleCollision)
         expect(physObj.isPointOnPerimeter).toBe(isPointOnPerimeter)
         expect(physObj.closestPointTo).toBe(closestPointTo)
         expect(physObj.normalAtPoint).toBe(normalAtPoint)
@@ -283,44 +279,18 @@ describe('PhysicsObject', () => {
         let draw = () => {}
         let isPointInside = () => {}
         let boundingRectangle = null
-        let handleCollision = () => {}
         let isPointOnPerimeter = () => {}
         let closestPointTo = () => {}
         let normalAtPoint = () => {}
 
         let physObj = new index.PhysicsObject(x,y,vx,vy,mass,grounded, draw,
-            isPointInside, boundingRectangle, handleCollision, isPointOnPerimeter,
+            isPointInside, boundingRectangle, isPointOnPerimeter,
             closestPointTo, normalAtPoint)
 
         physObj.applyForce(new index.Vector(10, 0))
 
         expect(physObj.vx).toBeCloseTo(0)
         expect(physObj.vy).toBeCloseTo(0)
-    })
-
-    test('basic collision handling', () => {
-        let x = 0
-        let y = 0
-        let vx = 0
-        let vy = 0
-        let mass = 1
-        let grounded = true
-        let draw = () => {}
-        let isPointInside = () => {}
-        let boundingRectangle = null
-        let handleCollision = function () {this.x = 10; this.y = -10}
-        let isPointOnPerimeter = () => {}
-        let closestPointTo = () => {}
-        let normalAtPoint = () => {}
-
-        let physObj = new index.PhysicsObject(x,y,vx,vy,mass,grounded, draw,
-            isPointInside, boundingRectangle, handleCollision, isPointOnPerimeter,
-            closestPointTo, normalAtPoint)
-
-        physObj.handleCollision()
-
-        expect(physObj.x).toBe(10)
-        expect(physObj.y).toBe(-10)
     })
 
     test('basic closest point to', () => {
@@ -333,7 +303,6 @@ describe('PhysicsObject', () => {
         let draw = () => {}
         let isPointInside = () => {}
         let boundingRectangle = null
-        let handleCollision = () => {}
         let isPointOnPerimeter = () => {}
         let closestPointTo = (xx,yy) => {
             if (xx == 1 && yy == 0) {
@@ -346,7 +315,7 @@ describe('PhysicsObject', () => {
         let normalAtPoint = () => {}
 
         let physObj = new index.PhysicsObject(x,y,vx,vy,mass,grounded, draw,
-            isPointInside, boundingRectangle, handleCollision, isPointOnPerimeter,
+            isPointInside, boundingRectangle, isPointOnPerimeter,
             closestPointTo, normalAtPoint)
 
         expect(physObj.closestPointTo(1,0)).toEqual({x:10, y:-10})
@@ -363,13 +332,12 @@ describe('PhysicsObject', () => {
         let draw = () => {}
         let isPointInside = () => {}
         let boundingRectangle = null
-        let handleCollision = () => {}
         let isPointOnPerimeter = (xx,yy) => {return xx == 1 && yy == 1}
         let closestPointTo = () => {}
         let normalAtPoint = () => {}
 
         let physObj = new index.PhysicsObject(x,y,vx,vy,mass,grounded, draw,
-            isPointInside, boundingRectangle, handleCollision, isPointOnPerimeter,
+            isPointInside, boundingRectangle, isPointOnPerimeter,
             closestPointTo, normalAtPoint)
 
         expect(physObj.isPointOnPerimeter(1,1)).toBeTruthy()
@@ -385,13 +353,12 @@ describe('PhysicsObject', () => {
         let draw = () => {}
         let isPointInside = () => {}
         let boundingRectangle = null
-        let handleCollision = () => {}
         let isPointOnPerimeter = (xx,yy) => {return xx == 1 && yy == 1}
         let closestPointTo = () => {}
         let normalAtPoint = () => {}
 
         let physObj = new index.PhysicsObject(x,y,vx,vy,mass,grounded, draw,
-            isPointInside, boundingRectangle, handleCollision, isPointOnPerimeter,
+            isPointInside, boundingRectangle, isPointOnPerimeter,
             closestPointTo, normalAtPoint)
 
         expect(physObj.isPointOnPerimeter(-1,1)).toBeFalsy()
@@ -407,13 +374,12 @@ describe('PhysicsObject', () => {
         let draw = () => {}
         let isPointInside = () => {}
         let boundingRectangle = null
-        let handleCollision = () => {}
         let isPointOnPerimeter = () => {}
         let closestPointTo = () => {}
         let normalAtPoint = () => {return new index.Vector(1,0)}
 
         let physObj = new index.PhysicsObject(x,y,vx,vy,mass,grounded, draw,
-            isPointInside, boundingRectangle, handleCollision, isPointOnPerimeter,
+            isPointInside, boundingRectangle, isPointOnPerimeter,
             closestPointTo, normalAtPoint)
 
         let normal = physObj.normalAtPoint()
