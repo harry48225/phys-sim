@@ -386,7 +386,7 @@ class CollisionHandler {
 
 var objects = []
 var drawingBoundingRectangles = false
-var drawCollisionNormals = true
+var drawCollisionNormals = false
 
 function toggleBoundingRectangles() {
     drawingBoundingRectangles = !drawingBoundingRectangles
@@ -431,11 +431,6 @@ function loop() {
                 
                 CollisionHandler.handleCollision(collidingPhysObj, physObj)
 
-                /*
-                if (physObj instanceof Ball) {
-                    physObj.handleCollision(collidingPhysObj)
-                }
-                */
             }
         })
 
@@ -489,3 +484,4 @@ exports.BoundingRectangle = BoundingRectangle
 exports.PhysicsObject = PhysicsObject
 exports.Ball = Ball
 exports.Slab = Slab
+exports.CollisionHandler = CollisionHandler
