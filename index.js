@@ -79,7 +79,7 @@ class BoundingRectangle {
 
 
 function PhysicsObject(x_pos, y_pos, vx, vy, mass, grounded, draw, isPointInside, 
-    boundingRectangle, handleCollision, isPointOnPerimeter, closestPointTo,
+    boundingRectangle, isPointOnPerimeter, closestPointTo,
     normalAtPoint, coefficientOfRestitution=1) {
     // a generic physics object,
     // draw should take an argument which is the 2D context to draw on
@@ -133,8 +133,6 @@ function PhysicsObject(x_pos, y_pos, vx, vy, mass, grounded, draw, isPointInside
         }
     }
 
-    this.handleCollision = handleCollision
-
     // returns the point on the object which is closest to the point argument
     this.closestPointTo = closestPointTo
 
@@ -169,78 +167,7 @@ function Ball(x_pos, y_pos, vx, vy, mass, grounded, radius, color) {
         },
         // bounding rectangle uses relative coordinates
         new BoundingRectangle(-radius, -radius, 2*radius, 2*radius),
-        // handle collision
-        function (collisionObject) {
-
-            if (collisionObject instanceof Slab)
-            {
-                let collision_point = collisionObject.closestPointTo(this.x, this.y)
-
-                let collision_normal = collisionObject.normalAtPoint(collision_point.x, collision_point.y)
-
-                console.log(collision_normal)
-                console.log(collision_point)
-                console.log(collision_normal)
-
-                // angle of incidence = angle of reflection
-                // reflect the velocity in the normal
-
-                let velocity = new Vector(this.vx, this.vy)
-                let component_normal = collision_normal.scale(velocity.dot(collision_normal))
-
-                velocity = velocity.subtract(component_normal.scale(2))
-
-                // apply coefficient of restitution
-
-                velocity = velocity.scale(collisionObject.coefficientOfRestitution)
-
-                // move so that we're outside the collision point
-                
-                this.x -= this.vx
-                this.y -= this.vy
-                
-
-                let oldVelocity = new Vector(this.vx, this.vy)
-
-                // apply the new velocity
-                this.vx = velocity.x
-                this.vy = velocity.y
-
-                if (drawCollisionNormals) {
-                    let ctx = getCanvasContext()
-
-                    let saved = startDrawing(ctx)
-                    ctx.strokeStyle = 'red'
-                    ctx.lineWidth = 2
-                    ctx.beginPath()
-                    ctx.moveTo(collision_point.x, collision_point.y)
-
-                    ctx.lineTo(collision_point.x + 30*collision_normal.x, collision_point.y + 30*collision_normal.y)
-                    ctx.stroke()
-
-                    // old velocity
-                    ctx.strokeStyle = 'blue'
-                    ctx.beginPath()
-                    ctx.moveTo(collision_point.x, collision_point.y)
-                    ctx.lineTo(collision_point.x - 30*oldVelocity.x, collision_point.y - 30*oldVelocity.y)
-                    ctx.stroke()
-
-
-                    // new velocity
-                    ctx.strokeStyle = 'green'
-                    ctx.beginPath()
-                    ctx.moveTo(collision_point.x, collision_point.y)
-                    ctx.lineTo(collision_point.x + 30*this.vx, collision_point.y + 30*this.vy)
-                    ctx.stroke()
-
-                    stopDrawing(ctx, saved)
-
-                }
-                
-
-            }
-            
-        })
+        )
 
 }
 
@@ -297,8 +224,6 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
 
         },
         new BoundingRectangle(0, 0, length, height),
-        // handle collision
-        function (collisionObject) {},
         // is point on perimeter
         function (x,y) {
 
@@ -372,6 +297,91 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
         restitution)
 }
 
+class CollisionHandler {
+
+    static handleCollision (physObjectOne, physObjectTwo) {
+
+        // probably don't actually need to do this since the get normal etc. methods
+        // are general enough
+        if (physObjectOne instanceof Slab || physObjectTwo instanceof Slab) {
+
+            let slab = physObjectOne instanceof Slab ? physObjectOne : physObjectTwo
+            let other = physObjectOne instanceof Slab ? physObjectTwo : physObjectOne
+
+            if (other instanceof Ball) {
+                CollisionHandler.handleBallSlabCollision(other, slab)
+            }
+
+        }
+    }
+
+    static handleBallSlabCollision (ball, slab) {
+        let collision_point = slab.closestPointTo(ball.x, ball.y)
+
+        let collision_normal = slab.normalAtPoint(collision_point.x, collision_point.y)
+
+        console.log(collision_normal)
+        console.log(collision_point)
+        console.log(collision_normal)
+
+        // angle of incidence = angle of reflection
+        // reflect the velocity in the normal
+
+        let velocity = new Vector(ball.vx, ball.vy)
+        let component_normal = collision_normal.scale(velocity.dot(collision_normal))
+
+        velocity = velocity.subtract(component_normal.scale(2))
+
+        // apply coefficient of restitution
+
+        velocity = velocity.scale(slab.coefficientOfRestitution)
+
+        // move so that we're outside the collision point
+        
+        ball.x -= ball.vx
+        ball.y -= ball.vy
+        
+
+        let oldVelocity = new Vector(ball.vx, ball.vy)
+
+        // apply the new velocity
+        ball.vx = velocity.x
+        ball.vy = velocity.y
+
+        if (drawCollisionNormals) {
+            let ctx = getCanvasContext()
+
+            let saved = startDrawing(ctx)
+            ctx.strokeStyle = 'red'
+            ctx.lineWidth = 2
+            ctx.beginPath()
+            ctx.moveTo(collision_point.x, collision_point.y)
+
+            ctx.lineTo(collision_point.x + 30*collision_normal.x, collision_point.y + 30*collision_normal.y)
+            ctx.stroke()
+
+            // old velocity
+            ctx.strokeStyle = 'blue'
+            ctx.beginPath()
+            ctx.moveTo(collision_point.x, collision_point.y)
+            ctx.lineTo(collision_point.x - 30*oldVelocity.x, collision_point.y - 30*oldVelocity.y)
+            ctx.stroke()
+
+
+            // new velocity
+            ctx.strokeStyle = 'green'
+            ctx.beginPath()
+            ctx.moveTo(collision_point.x, collision_point.y)
+            ctx.lineTo(collision_point.x + 30*ball.vx, collision_point.y + 30*ball.vy)
+            ctx.stroke()
+
+            stopDrawing(ctx, saved)
+
+        }
+        
+    }
+}
+
 //---------------------------------------------
 
 var objects = []
@@ -419,9 +429,13 @@ function loop() {
                 console.log(collidingPhysObj)
                 console.log(physObj)
                 
+                CollisionHandler.handleCollision(collidingPhysObj, physObj)
+
+                /*
                 if (physObj instanceof Ball) {
                     physObj.handleCollision(collidingPhysObj)
                 }
+                */
             }
         })
 
