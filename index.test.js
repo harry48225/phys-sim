@@ -860,3 +860,53 @@ describe('CollisionHandler', () => {
         })
     })
 })
+
+describe('user interface', () => {
+    describe('adding balls', () => {
+
+        let mockObjects;
+        let mockCanvas;
+        let mockEvent;
+
+        beforeEach(() => {
+            mockObjects = []
+
+            // mock a canvas object
+
+            mockCanvas = {
+                getBoundingClientRect : jest.fn(() => {
+                    return {left: 0, right: 0, height: 0, top: 0}
+                })
+            }
+
+            // mock event object
+            mockEvent = {clientX: 10, clientY: 20}
+
+            index.handleCanvasClick(mockEvent, mockCanvas, mockObjects)
+        })
+
+        test('one object in the array (the new ball)', () => {
+            expect(mockObjects).toHaveLength(1)
+
+        })
+
+        test('the object added was a ball', () => {
+            let potentialBall = mockObjects[0]
+            expect(potentialBall instanceof index.Ball).toBeTruthy()
+        })
+
+        test('ball added at correct location', () => {
+            let ball = mockObjects[0]
+
+            expect(ball.x).toBeCloseTo(10)
+            expect(ball.y).toBeCloseTo(-20)
+        })
+
+        test('ball has zero velocity', () => {
+            let ball = mockObjects[0]
+
+            expect(ball.vx).toBeCloseTo(0)
+            expect(ball.vy).toBeCloseTo(0)
+        })
+    })
+})

@@ -396,19 +396,19 @@ function toggleCollisionNormals() {
     drawCollisionNormals = !drawCollisionNormals
 }
 
-function handleCanvasClick(event) {
-    let rect = getCanvas().getBoundingClientRect();
+function handleCanvasClick(event, canvas, objectArray) {
+    let rect = canvas.getBoundingClientRect();
     let x = event.clientX - rect.left
     let y = rect.height -(event.clientY - rect.top) // convert from canvas coords to physics coords
 
     // spawn a ball
 
-    objects.push(new Ball(x, y, 0, 0, 1, false, 5, 'blue'))
+    objectArray.push(new Ball(x, y, 0, 0, 1, false, 5, 'blue'))
 }
 
 function start() {
 
-    getCanvas().addEventListener("mousedown", (event) => {handleCanvasClick(event)})
+    getCanvas().addEventListener("mousedown", (event) => {handleCanvasClick(event, getCanvas(), objects)})
     // starts the simulation
     objects.push(new Ball(100,300,0,0,1,false, 5,'red'))
 
@@ -497,3 +497,5 @@ exports.PhysicsObject = PhysicsObject
 exports.Ball = Ball
 exports.Slab = Slab
 exports.CollisionHandler = CollisionHandler
+exports.handleCanvasClick = handleCanvasClick
+exports.objects = objects
