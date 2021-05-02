@@ -387,6 +387,7 @@ class CollisionHandler {
 var objects = []
 var drawingBoundingRectangles = false
 var drawCollisionNormals = false
+var mostRecentClick = null
 
 function toggleBoundingRectangles() {
     drawingBoundingRectangles = !drawingBoundingRectangles
@@ -411,6 +412,16 @@ function spawnBall(x, y, objectArray) {
 function spawnSlabFromClickCoordinates(first_coordinate, second_coordinate, objectArray) {
     // expect coordinate to be a vector with x and y
 
+    // reorder the coordinates to be in order of increasing x
+
+    if (first_coordinate.x >= second_coordinate.x) {
+        let temp = first_coordinate
+
+        first_coordinate = second_coordinate
+        second_coordinate = temp
+
+    }
+
     // from the vector pointing from the first coordinate to the second
 
     let axisVector = new Vector(second_coordinate.x - first_coordinate.x, second_coordinate.y - first_coordinate.y)
@@ -426,6 +437,10 @@ function spawnSlabFromClickCoordinates(first_coordinate, second_coordinate, obje
 
     let angle = Math.acos(vectorToCenter.normalise().dot(new Vector(1,0)))
 
+    if (vectorToCenter.y < 0) {
+        angle = Math.PI - angle
+    }
+
     let slab = new Slab(x, y, 0, 0, 1, true, length, 5, angle)
 
     objectArray.push(slab)
@@ -439,8 +454,22 @@ function handleCanvasClick(event, canvas, objectArray) {
         spawnBall(coords.x, coords.y, objectArray)
     }
 
-    else if (document.getElementById('slabs').checked) {
-        spawnSlab()
+    if (document.getElementById('slabs').checked) {
+
+        if (mostRecentClick != null) {
+            spawnSlabFromClickCoordinates(coords, mostRecentClick, objectArray)
+
+            mostRecentClick = null
+        }
+
+        else {
+            mostRecentClick = coords
+        }
+        
+    }
+
+    else {
+        mostRecentClick = null
     }
     // spawn a ball
 
