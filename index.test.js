@@ -960,6 +960,47 @@ describe('user interface', () => {
             })
         })
 
+        describe('vertical slab', () => {
+            let mockObjects;
+    
+            beforeEach(() => {
+                mockObjects = []
+    
+                index.spawnSlabFromClickCoordinates({x: 0, y: 10}, {x:0, y:-10}, mockObjects)
+    
+            })
+    
+            test('one object in the array', () => {
+                expect(mockObjects).toHaveLength(1)
+    
+            })
+    
+            test('the object added was a slab', () => {
+                let potentialBall = mockObjects[0]
+                expect(potentialBall instanceof index.Slab).toBeTruthy()
+            })
+    
+            test('slab has correct center', () => {
+                let slab = mockObjects[0]
+    
+                expect(slab.x).toBeCloseTo(0)
+                expect(slab.y).toBeCloseTo(0)
+            })
+    
+            test('slab has correct angle', () => {
+                let slab = mockObjects[0]
+    
+                expect(slab.angle).toBeCloseTo(Math.PI/2)
+            })
+    
+            test('slab has zero velocity', () => {
+                let slab = mockObjects[0]
+    
+                expect(slab.vx).toBeCloseTo(0)
+                expect(slab.vy).toBeCloseTo(0)
+            })
+        })
+
         describe('acute angled slab', () => {
             let mockObjects;
 
