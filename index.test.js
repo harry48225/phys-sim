@@ -884,8 +884,6 @@ describe('user interface', () => {
     describe('adding balls', () => {
 
         let mockObjects;
-        let mockCanvas;
-        let mockEvent;
 
         beforeEach(() => {
             mockObjects = []
@@ -917,5 +915,92 @@ describe('user interface', () => {
             expect(ball.vx).toBeCloseTo(0)
             expect(ball.vy).toBeCloseTo(0)
         })
+    })
+
+    describe('adding slabs', () => {
+
+        describe('simple horizontal slab', () => {
+            let mockObjects;
+
+            beforeEach(() => {
+                mockObjects = []
+
+                index.spawnSlabFromClickCoordinates({x: -10, y: 0}, {x:10, y:0}, mockObjects)
+
+            })
+
+            test('one object in the array', () => {
+                expect(mockObjects).toHaveLength(1)
+
+            })
+
+            test('the object added was a slab', () => {
+                let potentialBall = mockObjects[0]
+                expect(potentialBall instanceof index.Slab).toBeTruthy()
+            })
+
+            test('slab has correct center', () => {
+                let slab = mockObjects[0]
+
+                expect(slab.x).toBeCloseTo(0)
+                expect(slab.y).toBeCloseTo(0)
+            })
+            
+            test('slab has correct angle', () => {
+                let slab = mockObjects[0]
+
+                expect(slab.angle).toBeCloseTo(0)
+            })
+
+            test('slab has zero velocity', () => {
+                let slab = mockObjects[0]
+
+                expect(slab.vx).toBeCloseTo(0)
+                expect(slab.vy).toBeCloseTo(0)
+            })
+        })
+
+        describe('simple angled slab', () => {
+            let mockObjects;
+
+            beforeEach(() => {
+                mockObjects = []
+
+                index.spawnSlabFromClickCoordinates({x: -10, y: -10}, {x:10, y:10}, mockObjects)
+
+            })
+
+            test('one object in the array', () => {
+                expect(mockObjects).toHaveLength(1)
+
+            })
+
+            test('the object added was a slab', () => {
+                let potentialBall = mockObjects[0]
+                expect(potentialBall instanceof index.Slab).toBeTruthy()
+            })
+
+            test('slab has correct center', () => {
+                let slab = mockObjects[0]
+
+                expect(slab.x).toBeCloseTo(0)
+                expect(slab.y).toBeCloseTo(0)
+            })
+
+            test('slab has correct angle', () => {
+                let slab = mockObjects[0]
+
+                expect(slab.angle).toBeCloseTo(Math.PI/4)
+            })
+
+            test('slab has zero velocity', () => {
+                let slab = mockObjects[0]
+
+                expect(slab.vx).toBeCloseTo(0)
+                expect(slab.vy).toBeCloseTo(0)
+            })
+        })
+        
+        
     })
 })

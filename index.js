@@ -408,6 +408,29 @@ function spawnBall(x, y, objectArray) {
     objectArray.push(new Ball(x, y, 0, 0, 1, false, 5, 'blue'))
 }
 
+function spawnSlabFromClickCoordinates(first_coordinate, second_coordinate, objectArray) {
+    // expect coordinate to be a vector with x and y
+
+    // from the vector pointing from the first coordinate to the second
+
+    let axisVector = new Vector(second_coordinate.x - first_coordinate.x, second_coordinate.y - first_coordinate.y)
+
+    let length = axisVector.getLength()
+
+    let vectorToCenter = axisVector.scale(0.5)
+    
+    let x = vectorToCenter.x + first_coordinate.x
+    let y = vectorToCenter.y + first_coordinate.y
+
+    // now find the angle
+
+    let angle = Math.acos(vectorToCenter.normalise().dot(new Vector(1,0)))
+
+    let slab = new Slab(x, y, 0, 0, 1, true, length, 5, angle)
+
+    objectArray.push(slab)
+}
+
 function handleCanvasClick(event, canvas, objectArray) {
     
     let coords = getPhysicsCoordsFromClickEvent(event, canvas)
@@ -417,6 +440,7 @@ function handleCanvasClick(event, canvas, objectArray) {
     }
 
     else if (document.getElementById('slabs').checked) {
+        spawnSlab()
     }
     // spawn a ball
 
@@ -518,3 +542,4 @@ exports.handleCanvasClick = handleCanvasClick
 exports.objects = objects
 exports.getPhysicsCoordsFromClickEvent = getPhysicsCoordsFromClickEvent
 exports.spawnBall = spawnBall
+exports.spawnSlabFromClickCoordinates = spawnSlabFromClickCoordinates
