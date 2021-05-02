@@ -862,6 +862,25 @@ describe('CollisionHandler', () => {
 })
 
 describe('user interface', () => {
+
+    test('correct click location', () => {
+        // mock a canvas object
+
+        let mockCanvas = {
+            getBoundingClientRect : jest.fn(() => {
+                return {left: 0, right: 0, height: 0, top: 0}
+            })
+        }
+
+        // mock event object
+        let mockEvent = {clientX: 10, clientY: 20}
+
+        let coords = index.getPhysicsCoordsFromClickEvent(mockEvent, mockCanvas)
+
+        expect(coords.x).toBeCloseTo(10)
+        expect(coords.y).toBeCloseTo(-20)
+    })
+
     describe('adding balls', () => {
 
         let mockObjects;
@@ -871,18 +890,8 @@ describe('user interface', () => {
         beforeEach(() => {
             mockObjects = []
 
-            // mock a canvas object
+            index.spawnBall(10, -20, mockObjects)
 
-            mockCanvas = {
-                getBoundingClientRect : jest.fn(() => {
-                    return {left: 0, right: 0, height: 0, top: 0}
-                })
-            }
-
-            // mock event object
-            mockEvent = {clientX: 10, clientY: 20}
-
-            index.handleCanvasClick(mockEvent, mockCanvas, mockObjects)
         })
 
         test('one object in the array (the new ball)', () => {

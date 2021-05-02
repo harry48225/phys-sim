@@ -284,7 +284,7 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
             let normal;
             if (height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction <= height/2 + TOLERANCE) {
                 normal = this.getHeightDirection().scale(signed_distance_in_height_direction).normalise()
-                console.log("height normal")
+                //console.log("height normal")
             }
             else {
                 normal = this.getLengthDirection().scale(signed_distance_in_length_direction).normalise()
@@ -320,9 +320,9 @@ class CollisionHandler {
 
         let collision_normal = slab.normalAtPoint(collision_point.x, collision_point.y)
 
-        console.log(collision_normal)
-        console.log(collision_point)
-        console.log(collision_normal)
+        //console.log(collision_normal)
+        //console.log(collision_point)
+        //console.log(collision_normal)
 
         // angle of incidence = angle of reflection
         // reflect the velocity in the normal
@@ -396,14 +396,31 @@ function toggleCollisionNormals() {
     drawCollisionNormals = !drawCollisionNormals
 }
 
-function handleCanvasClick(event, canvas, objectArray) {
+function getPhysicsCoordsFromClickEvent(event, canvas) {
     let rect = canvas.getBoundingClientRect();
     let x = event.clientX - rect.left
     let y = rect.height -(event.clientY - rect.top) // convert from canvas coords to physics coords
 
+    return {x: x, y: y}
+}
+
+function spawnBall(x, y, objectArray) {
+    objectArray.push(new Ball(x, y, 0, 0, 1, false, 5, 'blue'))
+}
+
+function handleCanvasClick(event, canvas, objectArray) {
+    
+    let coords = getPhysicsCoordsFromClickEvent(event, canvas)
+
+    if (document.getElementById('balls').checked) {
+        spawnBall(coords.x, coords.y, objectArray)
+    }
+
+    else if (document.getElementById('slabs').checked) {
+    }
     // spawn a ball
 
-    objectArray.push(new Ball(x, y, 0, 0, 1, false, 5, 'blue'))
+    
 }
 
 function start() {
@@ -438,8 +455,8 @@ function loop() {
         objects.forEach((collidingPhysObj) => {
 
             if (collidingPhysObj !== physObj && physObj.isObjectInside(collidingPhysObj)) {
-                console.log(collidingPhysObj)
-                console.log(physObj)
+                //console.log(collidingPhysObj)
+                //console.log(physObj)
                 
                 CollisionHandler.handleCollision(collidingPhysObj, physObj)
 
@@ -464,7 +481,7 @@ function loop() {
             physObj.boundingRectangle.draw(ctx, physObj.x, physObj.y)
         }
     })
-    console.log("frame")
+    //console.log("frame")
 
     window.requestAnimationFrame(loop)
 }
@@ -499,3 +516,5 @@ exports.Slab = Slab
 exports.CollisionHandler = CollisionHandler
 exports.handleCanvasClick = handleCanvasClick
 exports.objects = objects
+exports.getPhysicsCoordsFromClickEvent = getPhysicsCoordsFromClickEvent
+exports.spawnBall = spawnBall
