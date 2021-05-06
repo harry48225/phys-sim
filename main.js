@@ -1,3 +1,9 @@
+/******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ 138:
+/***/ ((module) => {
+
 const TOLERANCE = 0.01
 const TIME_STEP = 0.01
 
@@ -559,16 +565,66 @@ function getCanvasContext() {
     return getCanvas().getContext('2d')
 }
 
-exports.TIME_STEP = TIME_STEP
 
-exports.Vector = Vector
-exports.BoundingRectangle = BoundingRectangle
-exports.PhysicsObject = PhysicsObject
-exports.Ball = Ball
-exports.Slab = Slab
-exports.CollisionHandler = CollisionHandler
-exports.handleCanvasClick = handleCanvasClick
-exports.objects = objects
-exports.getPhysicsCoordsFromClickEvent = getPhysicsCoordsFromClickEvent
-exports.spawnBall = spawnBall
-exports.spawnSlabFromClickCoordinates = spawnSlabFromClickCoordinates
+module.exports = {
+
+    // app
+    start : start,
+    toggleBoundingRectangles : toggleBoundingRectangles,
+    toggleCollisionNormals : toggleCollisionNormals,
+    // tests
+    
+    TIME_STEP : TIME_STEP,
+    Vector : Vector,
+    BoundingRectangle : BoundingRectangle,
+    PhysicsObject : PhysicsObject,
+    Ball : Ball,
+    Slab : Slab,
+    CollisionHandler : CollisionHandler,
+    handleCanvasClick : handleCanvasClick,
+    objects : objects,
+    getPhysicsCoordsFromClickEvent : getPhysicsCoordsFromClickEvent,
+    spawnBall : spawnBall,
+    spawnSlabFromClickCoordinates : spawnSlabFromClickCoordinates,
+
+}
+
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__(138);
+/******/ 	window.physics = __webpack_exports__;
+/******/ 	
+/******/ })()
+;
