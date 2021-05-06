@@ -4,7 +4,8 @@
   "description": "simple javascript physics simulator",
   "private": true,
   "scripts": {
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "build": "npx webpack"
   },
   "repository": {
     "type": "git",
