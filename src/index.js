@@ -559,16 +559,26 @@ function getCanvasContext() {
     return getCanvas().getContext('2d')
 }
 
-exports.TIME_STEP = TIME_STEP
 
-exports.Vector = Vector
-exports.BoundingRectangle = BoundingRectangle
-exports.PhysicsObject = PhysicsObject
-exports.Ball = Ball
-exports.Slab = Slab
-exports.CollisionHandler = CollisionHandler
-exports.handleCanvasClick = handleCanvasClick
-exports.objects = objects
-exports.getPhysicsCoordsFromClickEvent = getPhysicsCoordsFromClickEvent
-exports.spawnBall = spawnBall
-exports.spawnSlabFromClickCoordinates = spawnSlabFromClickCoordinates
+module.exports = {
+
+    // app
+    start : start,
+    toggleBoundingRectangles : toggleBoundingRectangles,
+    toggleCollisionNormals : toggleCollisionNormals,
+    // tests
+    
+    TIME_STEP : TIME_STEP,
+    Vector : Vector,
+    BoundingRectangle : BoundingRectangle,
+    PhysicsObject : PhysicsObject,
+    Ball : Ball,
+    Slab : Slab,
+    CollisionHandler : CollisionHandler,
+    handleCanvasClick : handleCanvasClick,
+    objects : objects,
+    getPhysicsCoordsFromClickEvent : getPhysicsCoordsFromClickEvent,
+    spawnBall : spawnBall,
+    spawnSlabFromClickCoordinates : spawnSlabFromClickCoordinates,
+
+}

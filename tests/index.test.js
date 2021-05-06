@@ -1,4 +1,4 @@
-const index = require("./index")
+const index = require("../src/index")
 
 describe("Vector", () => {
     test('length of (3,4) to equal 5', () => {
