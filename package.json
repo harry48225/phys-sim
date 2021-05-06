@@ -2,7 +2,7 @@
   "name": "phys-sim",
   "version": "0.0.1",
   "description": "simple javascript physics simulator",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "jest --coverage"
   },
@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/harry48225/phys-sim#readme",
   "devDependencies": {
-    "jest": "^26.6.3"
+    "jest": "^26.5.0",
+    "webpack": "^5.36.2",
+    "webpack-cli": "^4.7.0"
   }
 }

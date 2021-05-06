@@ -2,18 +2,19 @@
 <html lang="en">
     <head>
         <title>phys-sim</title>
-        <script src="index.js"></script>
+        
     </head>
 
     <body>
+        <script src="main.js"></script>
         <h1>phys-sim</h1>
         
         <canvas width="500" height="500" id="canvas"></canvas>
 
         <br>
-        <button onclick="start()">start</button>
-        <button onclick="toggleBoundingRectangles()">toggle bounding rectangles</button>
-        <button onclick="drawCollisionNormals()">toggle drawing collision normals</button>
+        <button onclick="physics.start()">start</button>
+        <button onclick="physics.toggleBoundingRectangles()">toggle bounding rectangles</button>
+        <button onclick="physics.drawCollisionNormals()">toggle drawing collision normals</button>
 
         <h2>add type</h2>
         <input type="radio" id="balls" name="addType" value="balls">
