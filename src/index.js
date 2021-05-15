@@ -1,5 +1,7 @@
-const TOLERANCE = 0.01
-const TIME_STEP = 0.01
+const CONSTANTS = require("./constants")
+
+const PhysicsObject = require("./PhysicsObject")
+
 
 function Vector(x, y) {
     // all methods return a new vector
@@ -75,71 +77,6 @@ class BoundingRectangle {
         stopDrawing(ctx, saved)
 
     }
-}
-
-
-function PhysicsObject(x_pos, y_pos, vx, vy, mass, grounded, draw, isPointInside, 
-    boundingRectangle, isPointOnPerimeter, closestPointTo,
-    normalAtPoint, coefficientOfRestitution=1) {
-    // a generic physics object,
-    // draw should take an argument which is the 2D context to draw on
-    // isPointInside should take x,y and return whether it's inside the shape
-    // x, y, vx, vy, mass are in standard SI
-
-    this.x = x_pos;
-    this.y = y_pos;
-    this.vx = vx;
-    this.vy = vy;
-    this.mass = mass;
-
-    this.draw = draw;
-    this.isPointInside = isPointInside;
-    this.boundingRectangle = boundingRectangle;
-
-    this.coefficientOfRestitution = coefficientOfRestitution
-
-    this.isObjectInside = function (otherObject) {
-        // divide the bounding rectangle into 1px by 1px squares
-        // and check to see if there is a square that contains this object and the other object
-
-        const SQUARE_SIZE = 1
-        for (let relativePoint of this.boundingRectangle.yieldRelativePoints(SQUARE_SIZE)) {
-            let point = {x: this.x + relativePoint.x, y: this.y + relativePoint.y}
-            if (this.isPointInside(point.x,point.y) && otherObject.isPointInside(point.x,point.y)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    this.grounded = grounded;
-
-    // applys the given force to the object and updates the velocity
-    this.applyForce = function (force) {
-
-        if (!this.grounded) {
-            // explicit euler for now
-            // F = ma ==> a = F/m
-
-            force.scale(1/this.mass)
-
-            // v += a*t
-
-            this.vx += (force.x) * TIME_STEP
-            this.vy += (force.y) * TIME_STEP
-            
-            this.x += this.vx
-            this.y += this.vy
-        }
-    }
-
-    // returns the point on the object which is closest to the point argument
-    this.closestPointTo = closestPointTo
-
-    this.isPointOnPerimeter = isPointOnPerimeter
-
-    // return the normal to the surface at the given point
-    this.normalAtPoint = normalAtPoint
 }
 
 function Ball(x_pos, y_pos, vx, vy, mass, grounded, radius, color) {
@@ -231,9 +168,9 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
 
             let distance_in_length_direction = Math.abs(center_to_point.dot(this.getLengthDirection()))
             let distance_in_height_direction = Math.abs(center_to_point.dot(this.getHeightDirection()))
-            return ((length/2 - TOLERANCE <= distance_in_length_direction && distance_in_length_direction <= length/2 + TOLERANCE) 
+            return ((length/2 - CONSTANTS.TOLERANCE <= distance_in_length_direction && distance_in_length_direction <= length/2 + CONSTANTS.TOLERANCE) 
             && distance_in_height_direction <= this.height/2)
-            || ((height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction<= height/2 + TOLERANCE)
+            || ((height/2 - CONSTANTS.TOLERANCE <= distance_in_height_direction && distance_in_height_direction<= height/2 + CONSTANTS.TOLERANCE)
             && distance_in_length_direction <= this.length/2)
         },
         // closest point to
@@ -282,7 +219,7 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
             let distance_in_height_direction = Math.abs(signed_distance_in_height_direction)
 
             let normal;
-            if (height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction <= height/2 + TOLERANCE) {
+            if (height/2 - CONSTANTS.TOLERANCE <= distance_in_height_direction && distance_in_height_direction <= height/2 + CONSTANTS.TOLERANCE) {
                 normal = this.getHeightDirection().scale(signed_distance_in_height_direction).normalise()
                 //console.log("height normal")
             }
@@ -567,8 +504,6 @@ module.exports = {
     toggleBoundingRectangles : toggleBoundingRectangles,
     toggleCollisionNormals : toggleCollisionNormals,
     // tests
-    
-    TIME_STEP : TIME_STEP,
     Vector : Vector,
     BoundingRectangle : BoundingRectangle,
     PhysicsObject : PhysicsObject,

@@ -1,4 +1,5 @@
 const index = require("../src/index")
+const CONSTANTS = require("../src/constants")
 
 describe("Vector", () => {
     test('length of (3,4) to equal 5', () => {
@@ -265,8 +266,8 @@ describe('PhysicsObject', () => {
 
         physObj.applyForce(new index.Vector(10, 0))
 
-        expect(physObj.vx).toBeCloseTo(10*index.TIME_STEP)
-        expect(physObj.vy).toBeCloseTo(0*index.TIME_STEP)
+        expect(physObj.vx).toBeCloseTo(10*CONSTANTS.TIME_STEP)
+        expect(physObj.vy).toBeCloseTo(0*CONSTANTS.TIME_STEP)
     })
 
     test('grounded force application', () => {
