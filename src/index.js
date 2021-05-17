@@ -4,37 +4,7 @@ const DrawingTools = require("./DrawingTools")
 const PhysicsObject = require("./PhysicsObject")
 const Vector = require("./Vector")
 const BoundingRectangle = require("./BoundingRectangle.js")
-
-
-
-function Ball(x_pos, y_pos, vx, vy, mass, grounded, radius, color) {
-
-    this.radius = radius
-    this.color = color
-
-    PhysicsObject.call(this, x_pos, y_pos, vx, vy, mass, grounded, 
-        function (ctx) {
-
-            let saved = DrawingTools.startDrawing(ctx)
-            ctx.beginPath()
-            ctx.arc(this.x, this.y, radius, 0, 2*Math.PI, true)
-            ctx.closePath()
-            ctx.fillStyle = this.color
-            ctx.fill()
-
-            DrawingTools.stopDrawing(ctx, saved)
-        },
-        function (point_x,point_y) {
-            // distance vector pointing from the ball to the point
-            let distanceVector = new Vector(point_x - this.x, point_y - this.y)
-
-            return (distanceVector.getLength() < radius)
-        },
-        // bounding rectangle uses relative coordinates
-        new BoundingRectangle(-radius, -radius, 2*radius, 2*radius),
-        )
-
-}
+const Ball = require("./Ball")
 
 function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, restitution=1) {
     // an slab of the given length and height with center x,y, with an angle <angle> (in radians) from the length to the positive x axis extending in the positive x direction
@@ -184,10 +154,6 @@ class CollisionHandler {
         let collision_point = slab.closestPointTo(ball.x, ball.y)
 
         let collision_normal = slab.normalAtPoint(collision_point.x, collision_point.y)
-
-        //console.log(collision_normal)
-        //console.log(collision_point)
-        //console.log(collision_normal)
 
         // angle of incidence = angle of reflection
         // reflect the velocity in the normal
