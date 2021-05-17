@@ -1,39 +1,11 @@
 const CONSTANTS = require("./constants")
+const DrawingTools = require("./DrawingTools")
 
 const PhysicsObject = require("./PhysicsObject")
 const Vector = require("./Vector")
+const BoundingRectangle = require("./BoundingRectangle.js")
 
-class BoundingRectangle {
-    // a rectangle with sides aligned to the axes to provide a rough area that the PhysicsObject should occupy
-    // x, y, is the center of the rectangle relative to the object, length is the x-direction, height is in the y-direction
 
-    constructor(x_pos, y_pos, length, height) {
-        this.x = x_pos;
-        this.y = y_pos;
-        this.length = length;
-        this.height = height;
-    }
-    
-    * yieldRelativePoints(stepSize) {
-        for (let x_offset = this.x - this.length/2; x_offset < this.x + this.length/2; x_offset += stepSize) {
-            for (let y_offset = this.y - this.height/2; y_offset < this.y + this.height/2; y_offset += stepSize) {
-                yield {x:x_offset, y:y_offset}
-            }
-        }
-    }
-
-    draw (ctx, x, y) {
-
-        let saved = startDrawing(ctx)
-        let oldFillStyle = ctx.fillStyle
-        ctx.fillStyle = "#FF0000"
-        ctx.fillRect(x + this.x, y + this.y, this.length, this.height)
-        ctx.fillStyle = oldFillStyle
-
-        stopDrawing(ctx, saved)
-
-    }
-}
 
 function Ball(x_pos, y_pos, vx, vy, mass, grounded, radius, color) {
 
@@ -43,14 +15,14 @@ function Ball(x_pos, y_pos, vx, vy, mass, grounded, radius, color) {
     PhysicsObject.call(this, x_pos, y_pos, vx, vy, mass, grounded, 
         function (ctx) {
 
-            let saved = startDrawing(ctx)
+            let saved = DrawingTools.startDrawing(ctx)
             ctx.beginPath()
             ctx.arc(this.x, this.y, radius, 0, 2*Math.PI, true)
             ctx.closePath()
             ctx.fillStyle = this.color
             ctx.fill()
 
-            stopDrawing(ctx, saved)
+            DrawingTools.stopDrawing(ctx, saved)
         },
         function (point_x,point_y) {
             // distance vector pointing from the ball to the point
@@ -90,7 +62,7 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
             
             let corner = new Vector(this.x, this.y).add(lengthDirection.scale(length/2)).add(heightDirecton.scale(height/2))
             
-            let saved = startDrawing(ctx)
+            let saved = DrawingTools.startDrawing(ctx)
             ctx.beginPath();
 
             // first vertex
@@ -103,7 +75,7 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
             ctx.lineTo(corner.x, corner.y)
             ctx.fill()
 
-            stopDrawing(ctx, saved)
+            DrawingTools.stopDrawing(ctx, saved)
         },
         // is point inside
         function (x,y) {
@@ -242,9 +214,9 @@ class CollisionHandler {
         ball.vy = velocity.y
 
         if (drawCollisionNormals) {
-            let ctx = getCanvasContext()
+            let ctx = DrawingTools.getCanvasContext()
 
-            let saved = startDrawing(ctx)
+            let saved = DrawingTools.startDrawing(ctx)
             ctx.strokeStyle = 'red'
             ctx.lineWidth = 2
             ctx.beginPath()
@@ -268,7 +240,7 @@ class CollisionHandler {
             ctx.lineTo(collision_point.x + 30*ball.vx, collision_point.y + 30*ball.vy)
             ctx.stroke()
 
-            stopDrawing(ctx, saved)
+            DrawingTools.stopDrawing(ctx, saved)
 
         }
         
@@ -371,11 +343,11 @@ function handleCanvasClick(event, canvas, objectArray) {
 
 function start() {
 
-    getCanvas().addEventListener("mousedown", (event) => {handleCanvasClick(event, getCanvas(), objects)})
+    DrawingTools.getCanvas().addEventListener("mousedown", (event) => {handleCanvasClick(event, DrawingTools.getCanvas(), objects)})
     // starts the simulation
     objects.push(new Ball(100,300,0,0,1,false, 5,'red'))
 
-    objects.push(new Slab(getCanvas().width/2, 0, 0, 0, 1, true, getCanvas().width*2, 5, -Math.PI/4, 0.9))
+    objects.push(new Slab(DrawingTools.getCanvas().width/2, 0, 0, 0, 1, true, DrawingTools.getCanvas().width*2, 5, -Math.PI/4, 0.9))
     objects.push(new Slab(60, 50, 0, 0, 0, true, 1000, 2, Math.PI * 0.2))
     loop()
 }
@@ -401,8 +373,6 @@ function loop() {
         objects.forEach((collidingPhysObj) => {
 
             if (collidingPhysObj !== physObj && physObj.isObjectInside(collidingPhysObj)) {
-                //console.log(collidingPhysObj)
-                //console.log(physObj)
                 
                 CollisionHandler.handleCollision(collidingPhysObj, physObj)
 
@@ -415,10 +385,10 @@ function loop() {
     })
 
     // ----- drawing -----
-    let ctx = getCanvasContext()
+    let ctx = DrawingTools.getCanvasContext()
 
     // clear the rectangle
-    ctx.clearRect(0, 0, getCanvas().width, getCanvas().height)
+    ctx.clearRect(0, 0, DrawingTools.getCanvas().width, DrawingTools.getCanvas().height)
 
     objects.forEach((physObj) => {
         physObj.draw(ctx)
@@ -431,27 +401,6 @@ function loop() {
 
     window.requestAnimationFrame(loop)
 }
-
-function getCanvas() {
-    return document.getElementById('canvas')
-}
-
-function startDrawing(ctx) {
-    let saved = ctx.save()
-    ctx.translate(0, getCanvas().height)
-    ctx.scale(1,-1)
-
-    return saved
-}
-
-function stopDrawing(ctx, savedState) {
-    ctx.restore(savedState)
-}
-
-function getCanvasContext() {
-    return getCanvas().getContext('2d')
-}
-
 
 module.exports = {
 
