@@ -1,55 +1,51 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 138:
-/***/ ((module) => {
+/***/ 329:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-const TOLERANCE = 0.01
-const TIME_STEP = 0.01
+const DrawingTools = __webpack_require__(856)
+const PhysicsObject = __webpack_require__(77)
+const BoundingRectangle = __webpack_require__(961)
+const Vector = __webpack_require__(33)
 
-function Vector(x, y) {
-    // all methods return a new vector
-    this.x = x
-    this.y = y
-    
-    this.add = function (vector) { 
-        return new Vector(this.x + vector.x, this.y + vector.y)
-    }
+function Ball(x_pos, y_pos, vx, vy, mass, grounded, radius, color) {
 
-    this.subtract = function (vector) {
+    this.radius = radius
+    this.color = color
 
-        return new Vector(this.x, this.y).add(vector.scale(-1))
-    }
+    PhysicsObject.call(this, x_pos, y_pos, vx, vy, mass, grounded, 
+        function (ctx) {
 
-    // returns euclidean length
-    this.getLength = function () {
-        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
-    }
+            let saved = DrawingTools.startDrawing(ctx)
+            ctx.beginPath()
+            ctx.arc(this.x, this.y, radius, 0, 2*Math.PI, true)
+            ctx.closePath()
+            ctx.fillStyle = this.color
+            ctx.fill()
 
-    this.normalise = function () {
-        let length = this.getLength()
-        return new Vector(this.x / length, this.y / length)
+            DrawingTools.stopDrawing(ctx, saved)
+        },
+        function (point_x,point_y) {
+            // distance vector pointing from the ball to the point
+            let distanceVector = new Vector(point_x - this.x, point_y - this.y)
 
-    }
+            return (distanceVector.getLength() < radius)
+        },
+        // bounding rectangle uses relative coordinates
+        new BoundingRectangle(-radius, -radius, 2*radius, 2*radius),
+        )
 
-    this.scale = function (scale) {
-        return new Vector(this.x * scale, this.y * scale)
-    }
-
-    // rotates the vector anticlockwise by the given angle in radians
-    this.rotate = function (angle) {
-
-        let new_x = this.x*Math.cos(angle) - this.y*Math.sin(angle)
-        let new_y = this.x*Math.sin(angle) + this.y*Math.cos(angle)
-
-        return new Vector(new_x, new_y)
-    }
-
-    // dot product
-    this.dot = function (vector) {
-        return this.x * vector.x + this.y * vector.y
-    }
 }
+
+module.exports = Ball
+
+/***/ }),
+
+/***/ 961:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const DrawingTools = __webpack_require__(856)
 
 class BoundingRectangle {
     // a rectangle with sides aligned to the axes to provide a rough area that the PhysicsObject should occupy
@@ -72,17 +68,154 @@ class BoundingRectangle {
 
     draw (ctx, x, y) {
 
-        let saved = startDrawing(ctx)
+        let saved = DrawingTools.startDrawing(ctx)
         let oldFillStyle = ctx.fillStyle
         ctx.fillStyle = "#FF0000"
         ctx.fillRect(x + this.x, y + this.y, this.length, this.height)
         ctx.fillStyle = oldFillStyle
 
-        stopDrawing(ctx, saved)
+        DrawingTools.stopDrawing(ctx, saved)
 
     }
 }
 
+module.exports = BoundingRectangle
+
+/***/ }),
+
+/***/ 536:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const Slab = __webpack_require__(302)
+const Ball = __webpack_require__(329)
+
+const Vector = __webpack_require__(33)
+const DrawingTools = __webpack_require__(856)
+
+function handleCollision (physObjectOne, physObjectTwo) {
+
+    // probably don't actually need to do this since the get normal etc. methods
+    // are general enough
+    if (physObjectOne instanceof Slab || physObjectTwo instanceof Slab) {
+
+        let slab = physObjectOne instanceof Slab ? physObjectOne : physObjectTwo
+        let other = physObjectOne instanceof Slab ? physObjectTwo : physObjectOne
+
+        if (other instanceof Ball) {
+            handleBallSlabCollision(other, slab)
+        }
+
+    }
+}
+
+function handleBallSlabCollision (ball, slab) {
+    let collision_point = slab.closestPointTo(ball.x, ball.y)
+
+    let collision_normal = slab.normalAtPoint(collision_point.x, collision_point.y)
+
+    // angle of incidence = angle of reflection
+    // reflect the velocity in the normal
+
+    let velocity = new Vector(ball.vx, ball.vy)
+    let component_normal = collision_normal.scale(velocity.dot(collision_normal))
+
+    velocity = velocity.subtract(component_normal.scale(2))
+
+    // apply coefficient of restitution
+
+    velocity = velocity.scale(slab.coefficientOfRestitution)
+
+    // move so that we're outside the collision point
+    
+    ball.x -= ball.vx
+    ball.y -= ball.vy
+    
+
+    let oldVelocity = new Vector(ball.vx, ball.vy)
+
+    // apply the new velocity
+    ball.vx = velocity.x
+    ball.vy = velocity.y
+
+    /*
+    if (drawCollisionNormals) {
+        let ctx = DrawingTools.getCanvasContext()
+
+        let saved = DrawingTools.startDrawing(ctx)
+        ctx.strokeStyle = 'red'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(collision_point.x, collision_point.y)
+
+        ctx.lineTo(collision_point.x + 30*collision_normal.x, collision_point.y + 30*collision_normal.y)
+        ctx.stroke()
+
+        // old velocity
+        ctx.strokeStyle = 'blue'
+        ctx.beginPath()
+        ctx.moveTo(collision_point.x, collision_point.y)
+        ctx.lineTo(collision_point.x - 30*oldVelocity.x, collision_point.y - 30*oldVelocity.y)
+        ctx.stroke()
+
+
+        // new velocity
+        ctx.strokeStyle = 'green'
+        ctx.beginPath()
+        ctx.moveTo(collision_point.x, collision_point.y)
+        ctx.lineTo(collision_point.x + 30*ball.vx, collision_point.y + 30*ball.vy)
+        ctx.stroke()
+
+        DrawingTools.stopDrawing(ctx, saved)
+
+    }
+    */
+    
+}
+
+
+module.exports = {
+    handleCollision : handleCollision,
+    handleBallSlabCollision : handleCollision,
+}
+
+/***/ }),
+
+/***/ 856:
+/***/ ((module) => {
+
+function getCanvas() {
+    return document.getElementById('canvas')
+}
+
+function startDrawing(ctx) {
+    let saved = ctx.save()
+    ctx.translate(0, getCanvas().height)
+    ctx.scale(1,-1)
+
+    return saved
+}
+
+function stopDrawing(ctx, savedState) {
+    ctx.restore(savedState)
+}
+
+function getCanvasContext() {
+    return getCanvas().getContext('2d')
+}
+
+module.exports = {
+    getCanvas : getCanvas,
+    startDrawing : startDrawing,
+    stopDrawing : stopDrawing,
+    getCanvasContext : getCanvasContext,
+}
+
+/***/ }),
+
+/***/ 77:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const CONSTANTS = __webpack_require__(279)
 
 function PhysicsObject(x_pos, y_pos, vx, vy, mass, grounded, draw, isPointInside, 
     boundingRectangle, isPointOnPerimeter, closestPointTo,
@@ -131,8 +264,8 @@ function PhysicsObject(x_pos, y_pos, vx, vy, mass, grounded, draw, isPointInside
 
             // v += a*t
 
-            this.vx += (force.x) * TIME_STEP
-            this.vy += (force.y) * TIME_STEP
+            this.vx += (force.x) * CONSTANTS.TIME_STEP
+            this.vy += (force.y) * CONSTANTS.TIME_STEP
             
             this.x += this.vx
             this.y += this.vy
@@ -148,34 +281,18 @@ function PhysicsObject(x_pos, y_pos, vx, vy, mass, grounded, draw, isPointInside
     this.normalAtPoint = normalAtPoint
 }
 
-function Ball(x_pos, y_pos, vx, vy, mass, grounded, radius, color) {
+module.exports = PhysicsObject
 
-    this.radius = radius
-    this.color = color
+/***/ }),
 
-    PhysicsObject.call(this, x_pos, y_pos, vx, vy, mass, grounded, 
-        function (ctx) {
+/***/ 302:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-            let saved = startDrawing(ctx)
-            ctx.beginPath()
-            ctx.arc(this.x, this.y, radius, 0, 2*Math.PI, true)
-            ctx.closePath()
-            ctx.fillStyle = this.color
-            ctx.fill()
-
-            stopDrawing(ctx, saved)
-        },
-        function (point_x,point_y) {
-            // distance vector pointing from the ball to the point
-            let distanceVector = new Vector(point_x - this.x, point_y - this.y)
-
-            return (distanceVector.getLength() < radius)
-        },
-        // bounding rectangle uses relative coordinates
-        new BoundingRectangle(-radius, -radius, 2*radius, 2*radius),
-        )
-
-}
+const CONSTANTS = __webpack_require__(279)
+const DrawingTools = __webpack_require__(856)
+const PhysicsObject = __webpack_require__(77)
+const BoundingRectangle = __webpack_require__(961)
+const Vector = __webpack_require__(33)
 
 function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, restitution=1) {
     // an slab of the given length and height with center x,y, with an angle <angle> (in radians) from the length to the positive x axis extending in the positive x direction
@@ -203,7 +320,7 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
             
             let corner = new Vector(this.x, this.y).add(lengthDirection.scale(length/2)).add(heightDirecton.scale(height/2))
             
-            let saved = startDrawing(ctx)
+            let saved = DrawingTools.startDrawing(ctx)
             ctx.beginPath();
 
             // first vertex
@@ -216,7 +333,7 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
             ctx.lineTo(corner.x, corner.y)
             ctx.fill()
 
-            stopDrawing(ctx, saved)
+            DrawingTools.stopDrawing(ctx, saved)
         },
         // is point inside
         function (x,y) {
@@ -237,9 +354,9 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
 
             let distance_in_length_direction = Math.abs(center_to_point.dot(this.getLengthDirection()))
             let distance_in_height_direction = Math.abs(center_to_point.dot(this.getHeightDirection()))
-            return ((length/2 - TOLERANCE <= distance_in_length_direction && distance_in_length_direction <= length/2 + TOLERANCE) 
+            return ((length/2 - CONSTANTS.TOLERANCE <= distance_in_length_direction && distance_in_length_direction <= length/2 + CONSTANTS.TOLERANCE) 
             && distance_in_height_direction <= this.height/2)
-            || ((height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction<= height/2 + TOLERANCE)
+            || ((height/2 - CONSTANTS.TOLERANCE <= distance_in_height_direction && distance_in_height_direction<= height/2 + CONSTANTS.TOLERANCE)
             && distance_in_length_direction <= this.length/2)
         },
         // closest point to
@@ -288,7 +405,7 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
             let distance_in_height_direction = Math.abs(signed_distance_in_height_direction)
 
             let normal;
-            if (height/2 - TOLERANCE <= distance_in_height_direction && distance_in_height_direction <= height/2 + TOLERANCE) {
+            if (height/2 - CONSTANTS.TOLERANCE <= distance_in_height_direction && distance_in_height_direction <= height/2 + CONSTANTS.TOLERANCE) {
                 normal = this.getHeightDirection().scale(signed_distance_in_height_direction).normalise()
                 //console.log("height normal")
             }
@@ -303,90 +420,86 @@ function Slab(x_pos, y_pos, vx, vy, mass, grounded, length, height, angle=0, res
         restitution)
 }
 
-class CollisionHandler {
+module.exports = Slab
 
-    static handleCollision (physObjectOne, physObjectTwo) {
+/***/ }),
 
-        // probably don't actually need to do this since the get normal etc. methods
-        // are general enough
-        if (physObjectOne instanceof Slab || physObjectTwo instanceof Slab) {
+/***/ 33:
+/***/ ((module) => {
 
-            let slab = physObjectOne instanceof Slab ? physObjectOne : physObjectTwo
-            let other = physObjectOne instanceof Slab ? physObjectTwo : physObjectOne
-
-            if (other instanceof Ball) {
-                CollisionHandler.handleBallSlabCollision(other, slab)
-            }
-
-        }
+function Vector(x, y) {
+    // all methods return a new vector
+    this.x = x
+    this.y = y
+    
+    this.add = function (vector) { 
+        return new Vector(this.x + vector.x, this.y + vector.y)
     }
 
-    static handleBallSlabCollision (ball, slab) {
-        let collision_point = slab.closestPointTo(ball.x, ball.y)
+    this.subtract = function (vector) {
 
-        let collision_normal = slab.normalAtPoint(collision_point.x, collision_point.y)
+        return new Vector(this.x, this.y).add(vector.scale(-1))
+    }
 
-        //console.log(collision_normal)
-        //console.log(collision_point)
-        //console.log(collision_normal)
+    // returns euclidean length
+    this.getLength = function () {
+        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2))
+    }
 
-        // angle of incidence = angle of reflection
-        // reflect the velocity in the normal
+    this.normalise = function () {
+        let length = this.getLength()
+        return new Vector(this.x / length, this.y / length)
 
-        let velocity = new Vector(ball.vx, ball.vy)
-        let component_normal = collision_normal.scale(velocity.dot(collision_normal))
+    }
 
-        velocity = velocity.subtract(component_normal.scale(2))
+    this.scale = function (scale) {
+        return new Vector(this.x * scale, this.y * scale)
+    }
 
-        // apply coefficient of restitution
+    // rotates the vector anticlockwise by the given angle in radians
+    this.rotate = function (angle) {
 
-        velocity = velocity.scale(slab.coefficientOfRestitution)
+        let new_x = this.x*Math.cos(angle) - this.y*Math.sin(angle)
+        let new_y = this.x*Math.sin(angle) + this.y*Math.cos(angle)
 
-        // move so that we're outside the collision point
-        
-        ball.x -= ball.vx
-        ball.y -= ball.vy
-        
+        return new Vector(new_x, new_y)
+    }
 
-        let oldVelocity = new Vector(ball.vx, ball.vy)
-
-        // apply the new velocity
-        ball.vx = velocity.x
-        ball.vy = velocity.y
-
-        if (drawCollisionNormals) {
-            let ctx = getCanvasContext()
-
-            let saved = startDrawing(ctx)
-            ctx.strokeStyle = 'red'
-            ctx.lineWidth = 2
-            ctx.beginPath()
-            ctx.moveTo(collision_point.x, collision_point.y)
-
-            ctx.lineTo(collision_point.x + 30*collision_normal.x, collision_point.y + 30*collision_normal.y)
-            ctx.stroke()
-
-            // old velocity
-            ctx.strokeStyle = 'blue'
-            ctx.beginPath()
-            ctx.moveTo(collision_point.x, collision_point.y)
-            ctx.lineTo(collision_point.x - 30*oldVelocity.x, collision_point.y - 30*oldVelocity.y)
-            ctx.stroke()
-
-
-            // new velocity
-            ctx.strokeStyle = 'green'
-            ctx.beginPath()
-            ctx.moveTo(collision_point.x, collision_point.y)
-            ctx.lineTo(collision_point.x + 30*ball.vx, collision_point.y + 30*ball.vy)
-            ctx.stroke()
-
-            stopDrawing(ctx, saved)
-
-        }
-        
+    // dot product
+    this.dot = function (vector) {
+        return this.x * vector.x + this.y * vector.y
     }
 }
+
+module.exports = Vector
+
+/***/ }),
+
+/***/ 279:
+/***/ ((module) => {
+
+const TOLERANCE = 0.01
+const TIME_STEP = 0.01
+
+module.exports = {
+    TOLERANCE: TOLERANCE,
+    TIME_STEP: TIME_STEP,
+}
+
+/***/ }),
+
+/***/ 138:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const CONSTANTS = __webpack_require__(279)
+const DrawingTools = __webpack_require__(856)
+
+const PhysicsObject = __webpack_require__(77)
+const Vector = __webpack_require__(33)
+const BoundingRectangle = __webpack_require__(961)
+const Ball = __webpack_require__(329)
+const Slab = __webpack_require__(302)
+const CollisionHandler = __webpack_require__(536)
 
 //---------------------------------------------
 
@@ -484,11 +597,11 @@ function handleCanvasClick(event, canvas, objectArray) {
 
 function start() {
 
-    getCanvas().addEventListener("mousedown", (event) => {handleCanvasClick(event, getCanvas(), objects)})
+    DrawingTools.getCanvas().addEventListener("mousedown", (event) => {handleCanvasClick(event, DrawingTools.getCanvas(), objects)})
     // starts the simulation
     objects.push(new Ball(100,300,0,0,1,false, 5,'red'))
 
-    objects.push(new Slab(getCanvas().width/2, 0, 0, 0, 1, true, getCanvas().width*2, 5, -Math.PI/4, 0.9))
+    objects.push(new Slab(DrawingTools.getCanvas().width/2, 0, 0, 0, 1, true, DrawingTools.getCanvas().width*2, 5, -Math.PI/4, 0.9))
     objects.push(new Slab(60, 50, 0, 0, 0, true, 1000, 2, Math.PI * 0.2))
     loop()
 }
@@ -514,8 +627,6 @@ function loop() {
         objects.forEach((collidingPhysObj) => {
 
             if (collidingPhysObj !== physObj && physObj.isObjectInside(collidingPhysObj)) {
-                //console.log(collidingPhysObj)
-                //console.log(physObj)
                 
                 CollisionHandler.handleCollision(collidingPhysObj, physObj)
 
@@ -528,10 +639,10 @@ function loop() {
     })
 
     // ----- drawing -----
-    let ctx = getCanvasContext()
+    let ctx = DrawingTools.getCanvasContext()
 
     // clear the rectangle
-    ctx.clearRect(0, 0, getCanvas().width, getCanvas().height)
+    ctx.clearRect(0, 0, DrawingTools.getCanvas().width, DrawingTools.getCanvas().height)
 
     objects.forEach((physObj) => {
         physObj.draw(ctx)
@@ -545,27 +656,6 @@ function loop() {
     window.requestAnimationFrame(loop)
 }
 
-function getCanvas() {
-    return document.getElementById('canvas')
-}
-
-function startDrawing(ctx) {
-    let saved = ctx.save()
-    ctx.translate(0, getCanvas().height)
-    ctx.scale(1,-1)
-
-    return saved
-}
-
-function stopDrawing(ctx, savedState) {
-    ctx.restore(savedState)
-}
-
-function getCanvasContext() {
-    return getCanvas().getContext('2d')
-}
-
-
 module.exports = {
 
     // app
@@ -573,8 +663,6 @@ module.exports = {
     toggleBoundingRectangles : toggleBoundingRectangles,
     toggleCollisionNormals : toggleCollisionNormals,
     // tests
-    
-    TIME_STEP : TIME_STEP,
     Vector : Vector,
     BoundingRectangle : BoundingRectangle,
     PhysicsObject : PhysicsObject,
