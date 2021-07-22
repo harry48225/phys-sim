@@ -4,7 +4,7 @@
   "description": "simple javascript physics simulator",
   "private": true,
   "scripts": {
-    "start": "npx webpack serve"
+    "start": "npx webpack serve",
     "test": "jest --coverage",
     "build": "npx webpack"
   },
