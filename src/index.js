@@ -104,7 +104,13 @@ function handleCanvasClick(event, canvas, objectArray) {
 
 function start() {
 
-    DrawingTools.getCanvas().addEventListener("mousedown", (event) => {handleCanvasClick(event, DrawingTools.getCanvas(), objects)})
+    const canvas = DrawingTools.getCanvas();
+    const canvasCard = document.getElementById("canvas-card");
+
+    canvas.addEventListener("mousedown", (event) => {handleCanvasClick(event, DrawingTools.getCanvas(), objects)});
+    canvas.setAttribute("width", canvasCard.clientWidth*CONSTANTS.CANVAS_SCALE_FACTOR);
+    canvas.setAttribute("height", canvasCard.clientHeight*CONSTANTS.CANVAS_SCALE_FACTOR);
+
     // starts the simulation
     objects.push(new Ball(100,300,0,0,1,false, 5,'red'))
 

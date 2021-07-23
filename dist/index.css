@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Martel:wght@800&display=swap');
+
+body {
+    background-color: lightsalmon;
+}
+
+button {
+    padding: 10px;
+    border-radius: 20px;
+    border: 2px solid green;
+    background-color: darkgreen;
+    color: whitesmoke;
+    font-family: 'Martel';
+}
+
+.button-row {
+    display: flex;
+    justify-content: space-around;
+}
+
+.canvas-card {
+    border-radius: 20px;
+    background-color: wheat;
+    margin: 20px;
+    height: 500px;
+}
