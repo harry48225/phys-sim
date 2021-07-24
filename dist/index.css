@@ -4,6 +4,7 @@ body {
     background-color: lightsalmon;
     font-family: 'Martel';
     color: whitesmoke;
+    padding: 20px;
 }
 
 button {
@@ -25,7 +26,6 @@ button {
     border-radius: 5px;
     background-color: wheat;
     border-color: wheat;
-    margin: 20px;
 }
 
 .canvas-card {
