@@ -111,17 +111,10 @@ function start() {
     canvas.setAttribute("width", canvasCard.clientWidth*CONSTANTS.CANVAS_SCALE_FACTOR);
     canvas.setAttribute("height", canvasCard.clientHeight*CONSTANTS.CANVAS_SCALE_FACTOR);
 
-    // starts the simulation
-    objects.push(new Ball(100,300,0,0,1,false, 5,'red'))
-
-    objects.push(new Slab(DrawingTools.getCanvas().width/2, 0, 0, 0, 1, true, DrawingTools.getCanvas().width*2, 5, -Math.PI/4, 0.9))
-    objects.push(new Slab(60, 50, 0, 0, 0, true, 1000, 2, Math.PI * 0.2))
     loop()
 }
 
 function loop() {
-
-
     // ----- simulation -----
 
     objects
