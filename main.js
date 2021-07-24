@@ -480,10 +480,12 @@ module.exports = Vector
 
 const TOLERANCE = 0.01
 const TIME_STEP = 0.01
+const CANVAS_SCALE_FACTOR = 1;
 
 module.exports = {
-    TOLERANCE: TOLERANCE,
-    TIME_STEP: TIME_STEP,
+    TOLERANCE,
+    TIME_STEP,
+    CANVAS_SCALE_FACTOR,
 }
 
 /***/ }),
@@ -597,18 +599,17 @@ function handleCanvasClick(event, canvas, objectArray) {
 
 function start() {
 
-    DrawingTools.getCanvas().addEventListener("mousedown", (event) => {handleCanvasClick(event, DrawingTools.getCanvas(), objects)})
-    // starts the simulation
-    objects.push(new Ball(100,300,0,0,1,false, 5,'red'))
+    const canvas = DrawingTools.getCanvas();
+    const canvasCard = document.getElementById("canvas-card");
 
-    objects.push(new Slab(DrawingTools.getCanvas().width/2, 0, 0, 0, 1, true, DrawingTools.getCanvas().width*2, 5, -Math.PI/4, 0.9))
-    objects.push(new Slab(60, 50, 0, 0, 0, true, 1000, 2, Math.PI * 0.2))
+    canvas.addEventListener("mousedown", (event) => {handleCanvasClick(event, DrawingTools.getCanvas(), objects)});
+    canvas.setAttribute("width", canvasCard.clientWidth*CONSTANTS.CANVAS_SCALE_FACTOR);
+    canvas.setAttribute("height", canvasCard.clientHeight*CONSTANTS.CANVAS_SCALE_FACTOR);
+
     loop()
 }
 
 function loop() {
-
-
     // ----- simulation -----
 
     objects

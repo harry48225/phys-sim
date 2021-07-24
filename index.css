@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Martel:wght@800&display=swap');
+
+body {
+    background-color: lightsalmon;
+    font-family: 'Martel';
+    color: whitesmoke;
+    padding: 20px;
+}
+
+button {
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid wheat;
+    background-color: goldenrod;
+    font-family: 'Martel';
+    color: whitesmoke;
+}
+
+.button-row {
+    display: flex;
+    justify-content: space-around;
+    display: none;
+}
+
+.card {
+    border-radius: 5px;
+    background-color: wheat;
+    border-color: wheat;
+}
+
+.canvas-card {
+    height: 500px;
+}
+
+.add-type-card {
+    padding: 10px;
+    background-color: goldenrod;
+}
+
+.large-text {
+    font-size: larger;
+}

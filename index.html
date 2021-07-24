@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>phys-sim</title>
-        
+        <title>phys-sim</title> 
+        <link rel="stylesheet" href="index.css">     
     </head>
-
-    <body>
+    <body onload="physics.start()">
         <script src="main.js"></script>
         <h1>phys-sim</h1>
         
-        <canvas width="500" height="500" id="canvas"></canvas>
+        <div class="card canvas-card" id="canvas-card">
+            <canvas id="canvas"></canvas>
+        </div>
 
         <br>
-        <button onclick="physics.start()">start</button>
-        <button onclick="physics.toggleBoundingRectangles()">toggle bounding rectangles</button>
-        <button onclick="physics.drawCollisionNormals()">toggle drawing collision normals</button>
+        <div class="button-row">
+            <button onclick="physics.start()">start</button>
+            <button onclick="physics.toggleBoundingRectangles()">toggle bounding rectangles</button>
+            <button onclick="physics.drawCollisionNormals()">toggle drawing collision normals</button>
+        </div>
+    
 
-        <h2>add type</h2>
-        <input type="radio" id="balls" name="addType" value="balls">
-        <label for="balls">balls</label>
-        <input type="radio" id="slabs" name="addType" value="slabs">
-        <label for="slabs">slabs</label>
+        <div class="card add-type-card">
+            <span class="large-text">add type</span>
+            <input type="radio" id="balls" name="addType" value="balls">
+            <label for="balls">balls</label>
+            <input type="radio" id="slabs" name="addType" value="slabs">
+            <label for="slabs">slabs</label>
+        </div>
     </body>
-
 </html>
